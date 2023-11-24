@@ -1,0 +1,2 @@
+Ideally, files PulsePal.py and ArCOM.py should be pulled from the SanWorks github https://github.com/sanworks/PulsePal,
+but I could not figure how to do that.

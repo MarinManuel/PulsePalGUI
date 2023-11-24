@@ -1,0 +1,11 @@
+<RCC>
+  <qresource prefix="pixmaps">
+    <file>PulseSchemaBipolarBurst.png</file>
+    <file>PulseSchemaBipolarNoBurst.png</file>
+    <file>PulseSchemaMonopolarBurst.png</file>
+    <file>PulseSchemaMonopolarNoBurst.png</file>
+  </qresource>
+  <qresource prefix="icons">
+    <file>lightning.png</file>
+  </qresource>
+</RCC>
