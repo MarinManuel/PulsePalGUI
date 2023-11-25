@@ -43,9 +43,9 @@ def constrain_value(value, min_value, max_value):
 
 def discover_ports(pattern=PULSE_PAL_SERIAL_HWINFO):
     logger.debug(f"Discovering ports containing pattern '{pattern}'")
-    ports = serial.tools.list_ports.grep(pattern)
-    logger.debug(f"Found: {list(ports)}")
-    return list(ports)
+    ports = list(serial.tools.list_ports.grep(pattern))
+    logger.debug(f"Found: {ports}")
+    return ports
 
 
 class PulsePalTriggerMode(IntEnum):
