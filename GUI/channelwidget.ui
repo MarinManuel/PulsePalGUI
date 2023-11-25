@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>596</width>
-    <height>323</height>
+    <width>697</width>
+    <height>524</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="1" rowspan="2">
+   <item row="1" column="1" rowspan="2">
     <widget class="QGroupBox" name="groupBox_3">
      <property name="title">
       <string>Timing</string>
@@ -102,7 +102,7 @@
        </widget>
       </item>
       <item row="3" column="0">
-       <widget class="QLabel" name="label_7">
+       <widget class="QLabel" name="phase2DurationLabel">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -137,7 +137,7 @@
        </widget>
       </item>
       <item row="4" column="0">
-       <widget class="QLabel" name="label_8">
+       <widget class="QLabel" name="interPhaseIntervalLabel">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -203,7 +203,7 @@
      </layout>
     </widget>
    </item>
-   <item row="0" column="2">
+   <item row="1" column="2">
     <widget class="QGroupBox" name="burstModeGroupBox">
      <property name="title">
       <string>Burst mode</string>
@@ -270,45 +270,13 @@
      </layout>
     </widget>
    </item>
-   <item row="3" column="0" colspan="3">
+   <item row="1" column="3" rowspan="2">
     <widget class="QGroupBox" name="groupBox_5">
      <property name="title">
       <string>Trigger</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_2" columnstretch="1,0,1,1">
-      <item row="0" column="1">
-       <widget class="QLabel" name="label_12">
-        <property name="text">
-         <string>Trigger mode</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QComboBox" name="triggerModeComboBox">
-        <property name="currentText">
-         <string>Normal</string>
-        </property>
-        <property name="maxVisibleItems">
-         <number>3</number>
-        </property>
-        <item>
-         <property name="text">
-          <string>Normal</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Toggle</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Gated</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="0" column="3" rowspan="3">
+     <layout class="QGridLayout" name="gridLayout_2" columnstretch="1,0">
+      <item row="3" column="0">
        <widget class="QPushButton" name="softTriggerPushButton">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
@@ -326,43 +294,37 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QRadioButton" name="trigger2RadioButton">
+      <item row="1" column="0">
+       <widget class="QCheckBox" name="trigger2CheckBox">
         <property name="text">
          <string>Trigger 2</string>
         </property>
-        <attribute name="buttonGroup">
-         <string notr="true">triggerSourceButtonGroup</string>
-        </attribute>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QRadioButton" name="trigger1RadioButton">
-        <property name="text">
-         <string>Trigger 1</string>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">triggerSourceButtonGroup</string>
-        </attribute>
        </widget>
       </item>
       <item row="0" column="0">
-       <widget class="QRadioButton" name="triggerOffRadioButton">
+       <widget class="QCheckBox" name="trigger1CheckBox">
         <property name="text">
-         <string>Off</string>
+         <string>Trigger 1</string>
         </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">triggerSourceButtonGroup</string>
-        </attribute>
        </widget>
+      </item>
+      <item row="2" column="0">
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
       </item>
      </layout>
     </widget>
    </item>
-   <item row="1" column="0">
+   <item row="2" column="0">
     <widget class="QGroupBox" name="amplitudesGroupBox">
      <property name="title">
       <string>Amplitudes</string>
@@ -430,7 +392,7 @@
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QLabel" name="label_3">
+       <widget class="QLabel" name="phase2VoltageLabel">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -467,39 +429,7 @@
      </layout>
     </widget>
    </item>
-   <item row="0" column="0">
-    <widget class="QGroupBox" name="outputModeGroupBox">
-     <property name="title">
-      <string>Output mode</string>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <item>
-       <widget class="QRadioButton" name="outputModeMonophasicRadioButton">
-        <property name="text">
-         <string>Monophasic</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">outputModeButtonGroup</string>
-        </attribute>
-       </widget>
-      </item>
-      <item>
-       <widget class="QRadioButton" name="outputModeBiphasicRadioButton">
-        <property name="text">
-         <string>Biphasic</string>
-        </property>
-        <attribute name="buttonGroup">
-         <string notr="true">outputModeButtonGroup</string>
-        </attribute>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="1" column="2">
+   <item row="2" column="2">
     <widget class="QGroupBox" name="customTrainGroupBox">
      <property name="enabled">
       <bool>false</bool>
@@ -580,6 +510,66 @@
      </layout>
     </widget>
    </item>
+   <item row="1" column="0">
+    <widget class="QGroupBox" name="outputModeGroupBox">
+     <property name="title">
+      <string>Output mode</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QRadioButton" name="outputModeMonophasicRadioButton">
+        <property name="text">
+         <string>Monophasic</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+        <attribute name="buttonGroup">
+         <string notr="true">outputModeButtonGroup</string>
+        </attribute>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="outputModeBiphasicRadioButton">
+        <property name="text">
+         <string>Biphasic</string>
+        </property>
+        <attribute name="buttonGroup">
+         <string notr="true">outputModeButtonGroup</string>
+        </attribute>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="4">
+    <widget class="QLabel" name="schemaLabel">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>600</width>
+       <height>310</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>600</width>
+       <height>310</height>
+      </size>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <customwidgets>
@@ -596,6 +586,5 @@
  <buttongroups>
   <buttongroup name="outputModeButtonGroup"/>
   <buttongroup name="customTrainButtonGroup"/>
-  <buttongroup name="triggerSourceButtonGroup"/>
  </buttongroups>
 </ui>

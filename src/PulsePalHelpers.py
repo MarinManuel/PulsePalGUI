@@ -11,14 +11,7 @@ def constrain_value(value, min_value, max_value):
         return value
 
 
-class PulsePalTriggerMode(IntEnum):
-    NORMAL = 0
-    TOGGLE = 1
-    GATED = 2
-
-
-class PulsePalTriggerSource(IntEnum):
-    OFF = 0
+class PulsePalTriggerChannel(IntEnum):
     TRIGGER1 = 1
     TRIGGER2 = 2
 
@@ -27,6 +20,16 @@ class PulsePalCustomTrainID(IntEnum):
     NONE = 0
     TRAIN1 = 1
     TRAIN2 = 2
+
+
+class PulsePalCustomTrainTarget(IntEnum):
+    PULSES = 0
+    BURSTS = 1
+
+
+class PulsePalCustomTrainLoop(IntEnum):
+    ONE_SHOT = 0
+    LOOP = 1
 
 
 class PulsePalOutputChannel(object):
@@ -51,9 +54,10 @@ class PulsePalOutputChannel(object):
         self.__burst_duration = 0.0
         self.__train_delay = 0.0
         self.__train_duration = 1.0
-        self.__trigger_source = PulsePalTriggerSource.OFF
-        self.__trigger_mode = PulsePalTriggerMode.NORMAL
-        self.__custom_train = PulsePalCustomTrainID.NONE
+        self.__trigger_source = set()
+        self.__custom_train_id = PulsePalCustomTrainID.NONE
+        self.__custom_train_target = PulsePalCustomTrainTarget.PULSES
+        self.__custom_train_loop = PulsePalCustomTrainLoop.ONE_SHOT
 
     @property
     def is_biphasic(self) -> bool:
@@ -133,7 +137,7 @@ class PulsePalOutputChannel(object):
 
     @interburst_interval.setter
     def interburst_interval(self, value):
-        self.interburst_interval = constrain_value(value, self.MIN_DURATION, self.MAX_DURATION)
+        self.__interburst_interval = constrain_value(value, self.MIN_DURATION, self.MAX_DURATION)
         self.pulsepal.programOutputChannelParam('interBurstInterval', self.channel_id, self.interburst_interval)
 
     @property
@@ -176,31 +180,54 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam('pulseTrainDuration', self.channel_id, self.__train_duration)
 
     @property
-    def trigger_source(self) -> PulsePalTriggerSource:
+    def trigger_source(self):
         return self.__trigger_source
 
-    @trigger_source.setter
-    def trigger_source(self, value: PulsePalTriggerSource):
-        self.__trigger_source = value
-        # self.pulsepal.programOutputChannelParam('', self.channel_id, )  # FIXME
+    def enable_trigger_source(self, value: PulsePalTriggerChannel):
+        self.__trigger_source.add(value)
+        self.__update_trigger_source()
 
-    @property
-    def trigger_mode(self) -> PulsePalTriggerMode:
-        return self.__trigger_mode
+    def disable_trigger_source(self, value: PulsePalTriggerChannel):
+        self.__trigger_source.discard(value)
+        self.__update_trigger_source()
 
-    @trigger_mode.setter
-    def trigger_mode(self, value: PulsePalTriggerMode):
-        self.__trigger_mode = value
-        # self.pulsepal.programOutputChannelParam('', self.channel_id, )
+    def __update_trigger_source(self):
+        self.pulsepal.programOutputChannelParam('linkTriggerChannel1', self.channel_id,
+                                                PulsePalTriggerChannel.TRIGGER1 in self.__trigger_source)
+        self.pulsepal.programOutputChannelParam('linkTriggerChannel2', self.channel_id,
+                                                PulsePalTriggerChannel.TRIGGER2 in self.__trigger_source)
 
     @property
     def custom_train_id(self) -> PulsePalCustomTrainID:
-        return self.__custom_train
+        return self.__custom_train_id
 
     @custom_train_id.setter
     def custom_train_id(self, value: PulsePalCustomTrainID):
-        self.__custom_train = value
-        # self.pulsepal.programOutputChannelParam('', self.channel_id, )
+        self.__custom_train_id = value
+        # self.pulsepal.programOutputChannelParam('', self.channel_id, )  # FIXME
+
+    @property
+    def custom_train_target(self) -> PulsePalCustomTrainTarget:
+        return self.__custom_train_target
+
+    @custom_train_target.setter
+    def custom_train_target(self, value: PulsePalCustomTrainTarget):
+        self.__custom_train_target = value
+        # self.pulsepal.programOutputChannelParam('', self.channel_id, )  # FIXME
+
+    @property
+    def custom_train_loop(self) -> PulsePalCustomTrainLoop:
+        return self.__custom_train_loop
+
+    @custom_train_loop.setter
+    def custom_train_loop(self, value: PulsePalCustomTrainLoop):
+        self.__custom_train_loop = value
+        # self.pulsepal.programOutputChannelParam('', self.channel_id, )  # FIXME
+
+    def do_soft_trigger(self):
+        channels = [0]*4
+        channels[self.channel_id-1] = 1
+        self.pulsepal.triggerOutputChannels(*channels)
 
 
 # noinspection PyPep8Naming
