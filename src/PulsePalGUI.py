@@ -400,7 +400,7 @@ class PulsePalChannelWidget(QWidget):
     def __init__(self, channel: PulsePalOutputChannel):
         super().__init__()
         # noinspection SpellCheckingInspection
-        uic.loadUi("GUI/channelwidget.ui", self)
+        uic.loadUi("channelwidget.ui", self)
         self.__channel = channel
         self.__phase2_widgets = [
             self.phase2VoltageSpinBox,
@@ -574,7 +574,7 @@ class MainWindow(QMainWindow):
     def __init__(self, pulsepal: PulsePalObject):
         super().__init__()
         # noinspection SpellCheckingInspection
-        uic.loadUi("GUI/mainwindow.ui", self)
+        uic.loadUi("mainwindow.ui", self)
 
         self.pulsepal = pulsepal
         for ch_id in range(N_OUTPUT_CHANNELS):
