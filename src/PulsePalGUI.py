@@ -1,3 +1,4 @@
+import logging
 from enum import IntEnum
 
 import serial.tools.list_ports
@@ -21,8 +22,10 @@ from PyQt5.QtWidgets import (
 
 from src.PulsePal import PulsePalObject
 from src.scientific_spinbox import ScienDSpinBox
+import resources.resources as resources
 
 N_OUTPUT_CHANNELS = 4
+logger = logging.getLogger("PulsePalGUI")
 
 
 def constrain_value(value, min_value, max_value):
@@ -94,6 +97,7 @@ class PulsePalOutputChannel(object):
 
     @is_biphasic.setter
     def is_biphasic(self, value: bool):
+        logger.debug(f"PulsePalOutputChannel.is_biphasic({value})")
         self.__biphasic = value
         self.pulsepal.programOutputChannelParam(
             "isBiphasic", self.channel_id, int(value)
@@ -105,6 +109,7 @@ class PulsePalOutputChannel(object):
 
     @baseline_voltage.setter
     def baseline_voltage(self, value: float):
+        logger.debug(f"PulsePalOutputChannel.baseline_voltage({value})")
         self.__baseline_voltage = constrain_value(
             value, self.MIN_VOLTAGE, self.MAX_VOLTAGE
         )
@@ -118,6 +123,7 @@ class PulsePalOutputChannel(object):
 
     @phase1_duration.setter
     def phase1_duration(self, value: float):
+        logger.debug(f"PulsePalOutputChannel.phase1_duration({value})")
         self.__phase1_duration = constrain_value(
             value, self.MIN_DURATION, self.MAX_DURATION
         )
@@ -131,6 +137,7 @@ class PulsePalOutputChannel(object):
 
     @phase1_voltage.setter
     def phase1_voltage(self, value: float):
+        logger.debug(f"PulsePalOutputChannel.phase1_voltage({value})")
         self.__phase1_voltage = constrain_value(
             value, self.MIN_VOLTAGE, self.MAX_VOLTAGE
         )
@@ -144,6 +151,7 @@ class PulsePalOutputChannel(object):
 
     @phase2_voltage.setter
     def phase2_voltage(self, value: float):
+        logger.debug(f"PulsePalOutputChannel.phase2_voltage({value})")
         self.__phase2_voltage = constrain_value(
             value, self.MIN_VOLTAGE, self.MAX_VOLTAGE
         )
@@ -157,6 +165,7 @@ class PulsePalOutputChannel(object):
 
     @phase2_duration.setter
     def phase2_duration(self, value: float):
+        logger.debug(f"PulsePalOutputChannel.phase2_duration({value})")
         self.__phase2_duration = constrain_value(
             value, self.MIN_DURATION, self.MAX_DURATION
         )
@@ -170,6 +179,7 @@ class PulsePalOutputChannel(object):
 
     @interphase_interval.setter
     def interphase_interval(self, value):
+        logger.debug(f"PulsePalOutputChannel.interphase_interval({value})")
         self.__interphase_interval = constrain_value(
             value, self.MIN_DURATION, self.MAX_DURATION
         )
@@ -183,6 +193,7 @@ class PulsePalOutputChannel(object):
 
     @interpulse_interval.setter
     def interpulse_interval(self, value):
+        logger.debug(f"PulsePalOutputChannel.interpulse_interval({value})")
         self.__interpulse_interval = constrain_value(
             value, self.MIN_DURATION, self.MAX_DURATION
         )
@@ -196,6 +207,7 @@ class PulsePalOutputChannel(object):
 
     @interburst_interval.setter
     def interburst_interval(self, value):
+        logger.debug(f"PulsePalOutputChannel.interburst_interval({value})")
         self.__interburst_interval = constrain_value(
             value, self.MIN_DURATION, self.MAX_DURATION
         )
@@ -209,12 +221,17 @@ class PulsePalOutputChannel(object):
 
     @is_burst.setter
     def is_burst(self, value: bool):
+        logger.debug(f"PulsePalOutputChannel.is_burst({value})")
         self.__burst_mode = value
         if self.is_burst:
+            logger.debug(
+                f"Setting burstDuration to {self.__burst_duration}, activating burst mode"
+            )
             self.pulsepal.programOutputChannelParam(
                 "burstDuration", self.channel_id, self.__burst_duration
             )
         else:
+            logger.debug("Setting burstDuration to 0.0 to deactivate burst mode")
             self.pulsepal.programOutputChannelParam(
                 "burstDuration", self.channel_id, 0.0
             )
@@ -225,6 +242,7 @@ class PulsePalOutputChannel(object):
 
     @burst_duration.setter
     def burst_duration(self, value):
+        logger.debug(f"PulsePalOutputChannel.burst_duration({value})")
         self.__burst_duration = constrain_value(
             value, self.MIN_DURATION, self.MAX_DURATION
         )
@@ -238,6 +256,7 @@ class PulsePalOutputChannel(object):
 
     @train_delay.setter
     def train_delay(self, value: float):
+        logger.debug(f"PulsePalOutputChannel.train_delay({value})")
         self.__train_delay = constrain_value(value, 0.0, self.MAX_DURATION)
         self.pulsepal.programOutputChannelParam(
             "pulseTrainDelay", self.channel_id, self.__train_delay
@@ -249,6 +268,7 @@ class PulsePalOutputChannel(object):
 
     @train_duration.setter
     def train_duration(self, value: float):
+        logger.debug(f"PulsePalOutputChannel.train_duration({value})")
         self.__train_duration = constrain_value(
             value, self.MIN_DURATION, self.MAX_DURATION
         )
@@ -261,12 +281,20 @@ class PulsePalOutputChannel(object):
         return self.__trigger_source
 
     def enable_trigger_source(self, value: PulsePalTriggerChannel):
+        logger.debug(f"PulsePalOutputChannel.enable_trigger_source({value})")
         self.__trigger_source.add(value)
         self.__update_trigger_source()
+        logger.debug(
+            f"Trigger source for channel {self.channel_id} is now {self.trigger_source}"
+        )
 
     def disable_trigger_source(self, value: PulsePalTriggerChannel):
+        logger.debug(f"PulsePalOutputChannel.disable_trigger_source({value})")
         self.__trigger_source.discard(value)
         self.__update_trigger_source()
+        logger.debug(
+            f"Trigger source for channel {self.channel_id} is now {self.trigger_source}"
+        )
 
     def __update_trigger_source(self):
         self.pulsepal.programOutputChannelParam(
@@ -286,6 +314,7 @@ class PulsePalOutputChannel(object):
 
     @custom_train_id.setter
     def custom_train_id(self, value: PulsePalCustomTrainID):
+        logger.debug(f"PulsePalOutputChannel.custom_train_id({value})")
         self.__custom_train_id = value
         # self.pulsepal.programOutputChannelParam('', self.channel_id, )  # FIXME
 
@@ -295,6 +324,7 @@ class PulsePalOutputChannel(object):
 
     @custom_train_target.setter
     def custom_train_target(self, value: PulsePalCustomTrainTarget):
+        logger.debug(f"PulsePalOutputChannel.custom_train_target({value})")
         self.__custom_train_target = value
         # self.pulsepal.programOutputChannelParam('', self.channel_id, )  # FIXME
 
@@ -304,10 +334,12 @@ class PulsePalOutputChannel(object):
 
     @custom_train_loop.setter
     def custom_train_loop(self, value: PulsePalCustomTrainLoop):
+        logger.debug(f"PulsePalOutputChannel.custom_train_loop({value})")
         self.__custom_train_loop = value
         # self.pulsepal.programOutputChannelParam('', self.channel_id, )  # FIXME
 
     def do_soft_trigger(self):
+        logger.debug(f">>TRIGGER channel {self.channel_id}")
         channels = [0] * 4
         channels[self.channel_id - 1] = 1
         self.pulsepal.triggerOutputChannels(*channels)
@@ -317,47 +349,53 @@ class PulsePalOutputChannel(object):
 class DummyPulsePalObject(PulsePalObject):
     # noinspection PyMissingConstructor,PyUnusedLocal
     def __init__(self, PortName):
-        print(f"__init__({PortName})")
+        logging.info(f"__init__({PortName})")
 
     def setFixedVoltage(self, channel, voltage):
-        print(f"setFixedVoltage({channel}, {voltage})")
+        logging.info(f"setFixedVoltage({channel}, {voltage})")
 
     def programOutputChannelParam(self, paramName, channel, value):
-        print(f"programOutputChannelParam(self, {paramName}, {channel}, {value})")
+        logging.info(
+            f"programOutputChannelParam(self, {paramName}, {channel}, {value})"
+        )
 
     def programTriggerChannelParam(self, paramName, channel, value):
-        print(f"programTriggerChannelParam(self, {paramName}, {channel}, {value})")
+        logging.info(
+            f"programTriggerChannelParam(self, {paramName}, {channel}, {value})"
+        )
 
     def syncAllParams(self):
-        print(f"syncAllParams(self)")
+        logging.info(f"syncAllParams(self)")
 
     def sendCustomPulseTrain(self, customTrainID, pulseTimes, pulseVoltages):
-        print(
+        logging.info(
             f"sendCustomPulseTrain(self, {customTrainID}, {pulseTimes}, {pulseVoltages})"
         )
 
     def sendCustomWaveform(self, customTrainID, pulseWidth, pulseVoltages):
-        print(
+        logging.info(
             f"sendCustomWaveform(self, {customTrainID}, {pulseWidth}, {pulseVoltages})"
         )
 
     def setContinuousLoop(self, channel, state):
-        print(f"setContinuousLoop(self, {channel}, {state})")
+        logging.info(f"setContinuousLoop(self, {channel}, {state})")
 
     def triggerOutputChannels(self, channel1, channel2, channel3, channel4):
-        print(
+        logging.info(
             f"triggerOutputChannels(self, {channel1}, {channel2}, {channel3}, {channel4})"
         )
 
     def abortPulseTrains(self):
-        print(f"abortPulseTrains(self)")
+        logging.info(f"abortPulseTrains(self)")
 
     def __del__(self):
-        print(f"__del__()")
+        logging.info(f"__del__()")
 
 
 def discover_ports(pattern="Arduino"):
+    logger.debug(f"Discovering ports containing pattern '{pattern}'")
     ports = serial.tools.list_ports.grep(pattern)
+    logger.debug(f"Found: {list(ports)}")
     return list(ports)
 
 
@@ -400,7 +438,7 @@ class PulsePalChannelWidget(QWidget):
     def __init__(self, channel: PulsePalOutputChannel):
         super().__init__()
         # noinspection SpellCheckingInspection
-        uic.loadUi("channelwidget.ui", self)
+        uic.loadUi("src/channelwidget.ui", self)
         self.__channel = channel
         self.__phase2_widgets = [
             self.phase2VoltageSpinBox,
@@ -574,7 +612,7 @@ class MainWindow(QMainWindow):
     def __init__(self, pulsepal: PulsePalObject):
         super().__init__()
         # noinspection SpellCheckingInspection
-        uic.loadUi("mainwindow.ui", self)
+        uic.loadUi("src/mainwindow.ui", self)
 
         self.pulsepal = pulsepal
         for ch_id in range(N_OUTPUT_CHANNELS):
@@ -608,13 +646,17 @@ class MainWindow(QMainWindow):
 
     # noinspection PyUnusedLocal
     def __action_abort(self, checked):
+        logger.info(f"Terminating all output trains")
         self.pulsepal.abortPulseTrains()
 
     def __trigger1_mode_changed(self, index: int):
-        self.pulsepal.programTriggerChannelParam("triggerMode", 1, index)
+        mode = PulsePalTriggerMode(index)
+        logger.debug(f"setting Trigger 2 to mode {mode}")
+        self.pulsepal.programTriggerChannelParam("triggerMode", 1, mode)
 
     def __trigger2_mode_changed(self, index: int):
         mode = PulsePalTriggerMode(index)
+        logger.debug(f"setting Trigger 2 to mode {mode}")
         self.pulsepal.programTriggerChannelParam("triggerMode", 2, mode)
 
     def __do_soft_trigger(self, checked):
@@ -624,4 +666,7 @@ class MainWindow(QMainWindow):
             int(self.channel3TriggerCheckBox.isChecked()),
             int(self.channel4TriggerCheckBox.isChecked()),
         ]
+        logger.debug(
+            f">>Manual trigger channels {[i+1 for i,a in enumerate(channels) if a==1]}"
+        )
         self.pulsepal.triggerOutputChannels(*channels)

@@ -2,7 +2,7 @@ import argparse
 import logging
 
 from PyQt5.QtWidgets import QApplication, QInputDialog
-from src.PulsePalGUI import MainWindow, discover_ports
+from src.PulsePalGUI import MainWindow, discover_ports, DummyPulsePalObject
 from src.PulsePal import PulsePalObject, PulsePalError
 
 logger = logging.getLogger("PulsePalGUI")
@@ -33,6 +33,11 @@ if __name__ == "__main__":
         help="increase verbosity of output (can be "
         "repeated to increase verbosity further)",
     )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="use a dummy pulsepal simulator instead of the real hardware",
+    )
     args = parser.parse_args()
 
     level = LOGGING_LEVELS[
@@ -56,14 +61,17 @@ if __name__ == "__main__":
         else:
             args.port = None
 
-    if args.port is None:
+    if args.port is None and not args.debug:
         raise PulsePalError(
             "Could not find a suitable serial port. Please provide the serial port using the "
             "--port argument"
         )
 
     app = QApplication([])
-    pulsepal = PulsePalObject(args.port)
+    if args.debug:
+        pulsepal = DummyPulsePalObject(args.port)
+    else:
+        pulsepal = PulsePalObject(args.port)
     t = MainWindow(pulsepal)
     t.show()
     # Start the event loop.
