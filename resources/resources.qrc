@@ -6,6 +6,13 @@
     <file>PulseSchemaMonopolarNoBurst.png</file>
   </qresource>
   <qresource prefix="icons">
-    <file>lightning.png</file>
+    <file>waveform.png</file>
+    <file>pulse_train.png</file>
+    <file>about</file>
+    <file>exit</file>
+    <file>cancel</file>
+    <file>disconnected</file>
+    <file>connected</file>
+    <file>lightning</file>
   </qresource>
 </RCC>
