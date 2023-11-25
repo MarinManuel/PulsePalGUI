@@ -22,9 +22,13 @@ from PyQt5.QtWidgets import (
 
 from src.PulsePal import PulsePalObject
 from src.scientific_spinbox import ScienDSpinBox
+
+# noinspection PyUnresolvedReferences
 import resources.resources as resources
 
 N_OUTPUT_CHANNELS = 4
+PULSE_PAL_SERIAL_HWINFO = "VID:PID=2341:003E"
+
 logger = logging.getLogger("PulsePalGUI")
 
 
@@ -35,6 +39,13 @@ def constrain_value(value, min_value, max_value):
         return min_value
     else:
         return value
+
+
+def discover_ports(pattern=PULSE_PAL_SERIAL_HWINFO):
+    logger.debug(f"Discovering ports containing pattern '{pattern}'")
+    ports = serial.tools.list_ports.grep(pattern)
+    logger.debug(f"Found: {list(ports)}")
+    return list(ports)
 
 
 class PulsePalTriggerMode(IntEnum):
@@ -392,13 +403,6 @@ class DummyPulsePalObject(PulsePalObject):
         logging.info(f"__del__()")
 
 
-def discover_ports(pattern="Arduino"):
-    logger.debug(f"Discovering ports containing pattern '{pattern}'")
-    ports = serial.tools.list_ports.grep(pattern)
-    logger.debug(f"Found: {list(ports)}")
-    return list(ports)
-
-
 class PulsePalChannelWidget(QWidget):
     amplitudeGroupBox: QGroupBox
     baselineVoltageSpinBox: ScienDSpinBox
@@ -659,6 +663,7 @@ class MainWindow(QMainWindow):
         logger.debug(f"setting Trigger 2 to mode {mode}")
         self.pulsepal.programTriggerChannelParam("triggerMode", 2, mode)
 
+    # noinspection PyUnusedLocal
     def __do_soft_trigger(self, checked):
         channels = [
             int(self.channel1TriggerCheckBox.isChecked()),
