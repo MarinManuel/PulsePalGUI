@@ -372,6 +372,22 @@ class PulsePalOutputChannel(object):
         self.pulsepal.triggerOutputChannels(*channels)
         logger.debug(f"PulsePal.triggerOutputChannels({channels})")
 
+    def update_all(self):
+        self.is_biphasic = self.is_biphasic
+        self.baseline_voltage = self.baseline_voltage
+        self.phase1_voltage = self.phase1_voltage
+        self.phase2_voltage = self.phase2_voltage
+        self.phase1_duration = self.phase1_duration
+        self.phase2_duration = self.phase2_duration
+        self.interpulse_interval = self.interpulse_interval
+        self.interphase_interval = self.interphase_interval
+        self.interburst_interval = self.interburst_interval
+        self.burst_duration = self.burst_duration
+        self.is_burst = self.is_burst
+        self.train_delay = self.train_delay
+        self.train_duration = self.train_duration
+
+
 
 # noinspection PyPep8Naming
 class DummyPulsePalObject(PulsePalObject):
@@ -495,7 +511,6 @@ class PulsePalChannelWidget(QWidget):
             self.__update_interburst_interval
         )
 
-        # self.softTriggerPushButton.setIcon(QIcon(':/icons/lightning.png'))
         self.update_all_content()
 
     def update_all_content(self):
@@ -520,10 +535,13 @@ class PulsePalChannelWidget(QWidget):
         self.trigger2CheckBox.setChecked(
             PulsePalTriggerChannel.TRIGGER2 in self.__channel.trigger_source
         )
-
         self.outputModeBiphasicRadioButton.setChecked(self.__channel.is_biphasic)
         self.outputModeMonophasicRadioButton.setChecked(not self.__channel.is_biphasic)
         self.__update_schema()
+        self.__toggle_output_mode(None,None)
+        self.__toggle_burst_mode(None)
+        
+
 
     def __update_schema(self):
         if not self.__channel.is_biphasic:
