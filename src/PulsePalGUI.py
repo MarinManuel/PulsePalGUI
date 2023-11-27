@@ -113,6 +113,7 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "isBiphasic", self.channel_id, int(value)
         )
+        logger.debug(f"PulsePal.programOutputChannelParam('isBiphasic', {self.channel_id}, {int(value)})")
 
     @property
     def baseline_voltage(self) -> float:
@@ -127,6 +128,7 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "restingVoltage", self.channel_id, self.__baseline_voltage
         )
+        logger.debug(f"PulsePal.programOutputChannelParam('restingVoltage', {self.channel_id}, {self.__baseline_voltage})")
 
     @property
     def phase1_duration(self) -> float:
@@ -141,6 +143,7 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "phase1Duration", self.channel_id, self.__phase1_duration
         )
+        logger.debug(f"PulsePal.programOutputChannelParam('phase1Duration', {self.channel_id}, {self.__phase1_duration})")
 
     @property
     def phase1_voltage(self) -> float:
@@ -155,6 +158,7 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "phase1Voltage", self.channel_id, self.__phase1_voltage
         )
+        logger.debug(f"PulsePal.programOutputChannelParam('phase1Voltage', {self.channel_id}, {self.__phase1_voltage})")
 
     @property
     def phase2_voltage(self) -> float:
@@ -169,6 +173,7 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "phase2Voltage", self.channel_id, self.__phase2_voltage
         )
+        logger.debug(f"PulsePal.programOutputChannelParam('phase2Voltage', {self.channel_id}, {self.__phase2_voltage})")
 
     @property
     def phase2_duration(self) -> float:
@@ -183,6 +188,7 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "phase2Duration", self.channel_id, self.__phase2_duration
         )
+        logger.debug(f"PulsePal.programOutputChannelParam('phase2Duration', {self.channel_id}, {self.__phase2_duration})")
 
     @property
     def interphase_interval(self) -> float:
@@ -197,6 +203,7 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "interPhaseInterval", self.channel_id, self.__interphase_interval
         )
+        logger.debug(f"PulsePal.programOutputChannelParam('interPhaseInterval', {self.channel_id}, {self.__interphase_interval})")
 
     @property
     def interpulse_interval(self) -> float:
@@ -211,6 +218,7 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "interPulseInterval", self.channel_id, self.__interpulse_interval
         )
+        logger.debug(f"PulsePal.programOutputChannelParam('interPulseInterval', {self.channel_id}, {self.__interpulse_interval})")
 
     @property
     def interburst_interval(self) -> float:
@@ -225,6 +233,7 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "interBurstInterval", self.channel_id, self.interburst_interval
         )
+        logger.debug(f"PulsePal.programOutputChannelParam('interBurstInterval', {self.channel_id}, {self.interburst_interval})")
 
     @property
     def is_burst(self) -> bool:
@@ -241,11 +250,13 @@ class PulsePalOutputChannel(object):
             self.pulsepal.programOutputChannelParam(
                 "burstDuration", self.channel_id, self.__burst_duration
             )
+            logger.debug(f"PulsePal.programOutputChannelParam('burstDuration', {self.channel_id}, {self.__burst_duration})")
         else:
             logger.debug("Setting burstDuration to 0.0 to deactivate burst mode")
             self.pulsepal.programOutputChannelParam(
                 "burstDuration", self.channel_id, 0.0
             )
+            logger.debug(f"PulsePal.programOutputChannelParam('burstDuration', {self.channel_id}, 0.0)")
 
     @property
     def burst_duration(self):
@@ -260,6 +271,7 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "burstDuration", self.channel_id, self.__burst_duration
         )
+        logger.debug(f"PulsePal.programOutputChannelParam('burstDuration', {self.channel_id}, {self.__burst_duration})")
 
     @property
     def train_delay(self) -> float:
@@ -272,6 +284,7 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "pulseTrainDelay", self.channel_id, self.__train_delay
         )
+        logger.debug(f"PulsePal.programOutputChannelParam('pulseTrainDelay', {self.channel_id}, {self.__train_delay})")
 
     @property
     def train_duration(self) -> float:
@@ -286,6 +299,7 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "pulseTrainDuration", self.channel_id, self.__train_duration
         )
+        logger.debug(f"PulsePal.programOutputChannelParam('pulseTrainDuration', {self.channel_id}, {self.__train_duration})")
 
     @property
     def trigger_source(self):
@@ -311,13 +325,15 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "linkTriggerChannel1",
             self.channel_id,
-            PulsePalTriggerChannel.TRIGGER1 in self.__trigger_source,
+            PulsePalTriggerChannel.TRIGGER1 in self.__trigger_source
         )
+        logger.debug(f"PulsePal.programOutputChannelParam('linkTriggerChannel1',{self.channel_id},{PulsePalTriggerChannel.TRIGGER1 in self.__trigger_source})")
         self.pulsepal.programOutputChannelParam(
             "linkTriggerChannel2",
             self.channel_id,
             PulsePalTriggerChannel.TRIGGER2 in self.__trigger_source,
         )
+        logger.debug(f"PulsePal.programOutputChannelParam('linkTriggerChannel2',{self.channel_id},{PulsePalTriggerChannel.TRIGGER2 in self.__trigger_source})")
 
     @property
     def custom_train_id(self) -> PulsePalCustomTrainID:
@@ -354,6 +370,7 @@ class PulsePalOutputChannel(object):
         channels = [0] * 4
         channels[self.channel_id - 1] = 1
         self.pulsepal.triggerOutputChannels(*channels)
+        logger.debug(f"PulsePal.triggerOutputChannels({channels})")
 
 
 # noinspection PyPep8Naming

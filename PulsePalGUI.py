@@ -36,6 +36,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--debug",
         action="store_true",
+        dest='debug_mode',
         help="use a dummy pulsepal simulator instead of the real hardware",
     )
     args = parser.parse_args()
@@ -46,6 +47,7 @@ if __name__ == "__main__":
     logger.setLevel(level=level)
 
     if args.port is None:
+        logger.info("Starting serial port auto-discovery...")
         possible_ports = discover_ports()
         if len(possible_ports) > 1:
             # there are more than 1 valid port.
@@ -58,21 +60,25 @@ if __name__ == "__main__":
                 args.port = possible_ports[item_id].name
         elif len(possible_ports) == 1:
             args.port = possible_ports[0].name
+            logger.info(f"Found serial port [{args.port}]")
         else:
             args.port = None
 
-    if args.port is None and not args.debug:
+    if args.port is None and not args.debug_mode:
         raise PulsePalError(
             "Could not find a suitable serial port. Please provide the serial port using the "
             "--port argument"
         )
 
-    app = QApplication([])
-    if args.debug:
-        pulsepal = DummyPulsePalObject(args.port)
+    if args.debug_mode:
+        pulsepal = DummyPulsePalObject(None)
+        logger.info(f"Running in debug mode with Dummy Pulse Pal device: {pulsepal}")
     else:
         pulsepal = PulsePalObject(args.port)
-    t = MainWindow(pulsepal)
-    t.show()
+        logger.debug(f"Connecting to serial port [{args.port}]: {pulsepal}")
+
+    app = QApplication([])
+    mw = MainWindow(pulsepal)
+    mw.show()
     # Start the event loop.
     app.exec()
