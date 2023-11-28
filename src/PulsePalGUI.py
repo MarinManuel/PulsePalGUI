@@ -2,6 +2,8 @@ import logging
 from enum import IntEnum
 
 import serial.tools.list_ports
+
+# noinspection PyUnresolvedReferences
 from PyQt5 import uic
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import (
@@ -20,11 +22,10 @@ from PyQt5.QtWidgets import (
     QAction,
 )
 
-from src.PulsePal import PulsePalObject
-from src.scientific_spinbox import ScienDSpinBox
-
 # noinspection PyUnresolvedReferences
 import resources.resources as resources
+from src.PulsePal import PulsePalObject
+from src.scientific_spinbox import ScienDSpinBox
 
 N_OUTPUT_CHANNELS = 4
 PULSE_PAL_SERIAL_HWINFO = "VID:PID=2341:003E"
@@ -81,26 +82,43 @@ class PulsePalOutputChannel(object):
     MIN_VOLTAGE = -10.0
     MAX_VOLTAGE = 10.0
 
+    __biphasic: bool
+    __baseline_voltage: float
+    __phase1_voltage: float
+    __phase1_duration: float
+    __phase2_voltage: float
+    __phase2_duration: float
+    __interphase_interval: float
+    __interpulse_interval: float
+    __burst_mode: bool
+    __interburst_interval: float
+    __burst_duration: float
+    __train_delay: float
+    __train_duration: float
+    __trigger_source: set
+    __custom_train_id: PulsePalCustomTrainID
+    __custom_train_target: PulsePalCustomTrainTarget
+    __custom_train_loop: PulsePalCustomTrainLoop
+
     def __init__(self, channel_id, pulsepal: PulsePalObject):
         self.channel_id = channel_id
         self.pulsepal = pulsepal
-        self.__biphasic = False
-        self.__baseline_voltage = 0.0
-        self.__phase1_voltage = 5.0
-        self.__phase1_duration = 0.001
-        self.__phase2_voltage = -5.0
-        self.__phase2_duration = 0.001
-        self.__interphase_interval = 0.0001
-        self.__interpulse_interval = 0.1
-        self.__burst_mode = False
-        self.__interburst_interval = 0.0
-        self.__burst_duration = 0.0
-        self.__train_delay = 0.0
-        self.__train_duration = 1.0
-        self.__trigger_source = set()
-        self.__custom_train_id = PulsePalCustomTrainID.NONE
-        self.__custom_train_target = PulsePalCustomTrainTarget.PULSES
-        self.__custom_train_loop = PulsePalCustomTrainLoop.ONE_SHOT
+
+        # default values, this should initialize the underlying PulsePalObject
+        self.baseline_voltage = 0.0
+        self.phase1_voltage = 5.0
+        self.phase1_duration = 0.1
+        self.phase2_voltage = -5.0
+        self.phase2_duration = 0.1
+        self.interphase_interval = 0.0001
+        self.interpulse_interval = 0.5
+        self.is_biphasic = False
+        self.interburst_interval = 0.5
+        self.burst_duration = 5.0
+        self.train_delay = 0.0
+        self.train_duration = 5.0
+        self.is_burst = False
+        self.disable_trigger_source()
 
     @property
     def is_biphasic(self) -> bool:
@@ -113,7 +131,9 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "isBiphasic", self.channel_id, int(value)
         )
-        logger.debug(f"PulsePal.programOutputChannelParam('isBiphasic', {self.channel_id}, {int(value)})")
+        logger.debug(
+            f"PulsePal.programOutputChannelParam('isBiphasic', {self.channel_id}, {int(value)})"
+        )
 
     @property
     def baseline_voltage(self) -> float:
@@ -128,7 +148,9 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "restingVoltage", self.channel_id, self.__baseline_voltage
         )
-        logger.debug(f"PulsePal.programOutputChannelParam('restingVoltage', {self.channel_id}, {self.__baseline_voltage})")
+        logger.debug(
+            f"PulsePal.programOutputChannelParam('restingVoltage', {self.channel_id}, {self.__baseline_voltage})"
+        )
 
     @property
     def phase1_duration(self) -> float:
@@ -143,7 +165,9 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "phase1Duration", self.channel_id, self.__phase1_duration
         )
-        logger.debug(f"PulsePal.programOutputChannelParam('phase1Duration', {self.channel_id}, {self.__phase1_duration})")
+        logger.debug(
+            f"PulsePal.programOutputChannelParam('phase1Duration', {self.channel_id}, {self.__phase1_duration})"
+        )
 
     @property
     def phase1_voltage(self) -> float:
@@ -158,7 +182,9 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "phase1Voltage", self.channel_id, self.__phase1_voltage
         )
-        logger.debug(f"PulsePal.programOutputChannelParam('phase1Voltage', {self.channel_id}, {self.__phase1_voltage})")
+        logger.debug(
+            f"PulsePal.programOutputChannelParam('phase1Voltage', {self.channel_id}, {self.__phase1_voltage})"
+        )
 
     @property
     def phase2_voltage(self) -> float:
@@ -173,7 +199,9 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "phase2Voltage", self.channel_id, self.__phase2_voltage
         )
-        logger.debug(f"PulsePal.programOutputChannelParam('phase2Voltage', {self.channel_id}, {self.__phase2_voltage})")
+        logger.debug(
+            f"PulsePal.programOutputChannelParam('phase2Voltage', {self.channel_id}, {self.__phase2_voltage})"
+        )
 
     @property
     def phase2_duration(self) -> float:
@@ -188,7 +216,9 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "phase2Duration", self.channel_id, self.__phase2_duration
         )
-        logger.debug(f"PulsePal.programOutputChannelParam('phase2Duration', {self.channel_id}, {self.__phase2_duration})")
+        logger.debug(
+            f"PulsePal.programOutputChannelParam('phase2Duration', {self.channel_id}, {self.__phase2_duration})"
+        )
 
     @property
     def interphase_interval(self) -> float:
@@ -203,7 +233,9 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "interPhaseInterval", self.channel_id, self.__interphase_interval
         )
-        logger.debug(f"PulsePal.programOutputChannelParam('interPhaseInterval', {self.channel_id}, {self.__interphase_interval})")
+        logger.debug(
+            f"PulsePal.programOutputChannelParam('interPhaseInterval', {self.channel_id}, {self.__interphase_interval})"
+        )
 
     @property
     def interpulse_interval(self) -> float:
@@ -218,7 +250,9 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "interPulseInterval", self.channel_id, self.__interpulse_interval
         )
-        logger.debug(f"PulsePal.programOutputChannelParam('interPulseInterval', {self.channel_id}, {self.__interpulse_interval})")
+        logger.debug(
+            f"PulsePal.programOutputChannelParam('interPulseInterval', {self.channel_id}, {self.__interpulse_interval})"
+        )
 
     @property
     def interburst_interval(self) -> float:
@@ -233,7 +267,9 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "interBurstInterval", self.channel_id, self.interburst_interval
         )
-        logger.debug(f"PulsePal.programOutputChannelParam('interBurstInterval', {self.channel_id}, {self.interburst_interval})")
+        logger.debug(
+            f"PulsePal.programOutputChannelParam('interBurstInterval', {self.channel_id}, {self.interburst_interval})"
+        )
 
     @property
     def is_burst(self) -> bool:
@@ -250,13 +286,17 @@ class PulsePalOutputChannel(object):
             self.pulsepal.programOutputChannelParam(
                 "burstDuration", self.channel_id, self.__burst_duration
             )
-            logger.debug(f"PulsePal.programOutputChannelParam('burstDuration', {self.channel_id}, {self.__burst_duration})")
+            logger.debug(
+                f"PulsePal.programOutputChannelParam('burstDuration', {self.channel_id}, {self.__burst_duration})"
+            )
         else:
             logger.debug("Setting burstDuration to 0.0 to deactivate burst mode")
             self.pulsepal.programOutputChannelParam(
                 "burstDuration", self.channel_id, 0.0
             )
-            logger.debug(f"PulsePal.programOutputChannelParam('burstDuration', {self.channel_id}, 0.0)")
+            logger.debug(
+                f"PulsePal.programOutputChannelParam('burstDuration', {self.channel_id}, 0.0)"
+            )
 
     @property
     def burst_duration(self):
@@ -271,7 +311,9 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "burstDuration", self.channel_id, self.__burst_duration
         )
-        logger.debug(f"PulsePal.programOutputChannelParam('burstDuration', {self.channel_id}, {self.__burst_duration})")
+        logger.debug(
+            f"PulsePal.programOutputChannelParam('burstDuration', {self.channel_id}, {self.__burst_duration})"
+        )
 
     @property
     def train_delay(self) -> float:
@@ -284,7 +326,9 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "pulseTrainDelay", self.channel_id, self.__train_delay
         )
-        logger.debug(f"PulsePal.programOutputChannelParam('pulseTrainDelay', {self.channel_id}, {self.__train_delay})")
+        logger.debug(
+            f"PulsePal.programOutputChannelParam('pulseTrainDelay', {self.channel_id}, {self.__train_delay})"
+        )
 
     @property
     def train_duration(self) -> float:
@@ -299,13 +343,19 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "pulseTrainDuration", self.channel_id, self.__train_duration
         )
-        logger.debug(f"PulsePal.programOutputChannelParam('pulseTrainDuration', {self.channel_id}, {self.__train_duration})")
+        logger.debug(
+            f"PulsePal.programOutputChannelParam('pulseTrainDuration', {self.channel_id}, {self.__train_duration})"
+        )
 
     @property
     def trigger_source(self):
         return self.__trigger_source
 
     def enable_trigger_source(self, value: PulsePalTriggerChannel):
+        """
+        adds a trigger for that channel
+        :param value: either PulsePalTriggerChannel.TRIGGER or either PulsePalTriggerChannel.TRIGGER2
+        """
         logger.debug(f"PulsePalOutputChannel.enable_trigger_source({value})")
         self.__trigger_source.add(value)
         self.__update_trigger_source()
@@ -313,9 +363,16 @@ class PulsePalOutputChannel(object):
             f"Trigger source for channel {self.channel_id} is now {self.trigger_source}"
         )
 
-    def disable_trigger_source(self, value: PulsePalTriggerChannel):
+    def disable_trigger_source(self, value: PulsePalTriggerChannel = None):
+        """
+        removes a trigger source from the list of triggers for that channels
+        :param value: either PulsePalTriggerChannel.TRIGGER1, either PulsePalTriggerChannel.TRIGGER2, or None (in which case all triggers are removed)
+        """
         logger.debug(f"PulsePalOutputChannel.disable_trigger_source({value})")
-        self.__trigger_source.discard(value)
+        if value is not None:
+            self.__trigger_source.discard(value)
+        else:
+            self.__trigger_source = set()
         self.__update_trigger_source()
         logger.debug(
             f"Trigger source for channel {self.channel_id} is now {self.trigger_source}"
@@ -325,15 +382,19 @@ class PulsePalOutputChannel(object):
         self.pulsepal.programOutputChannelParam(
             "linkTriggerChannel1",
             self.channel_id,
-            PulsePalTriggerChannel.TRIGGER1 in self.__trigger_source
+            PulsePalTriggerChannel.TRIGGER1 in self.__trigger_source,
         )
-        logger.debug(f"PulsePal.programOutputChannelParam('linkTriggerChannel1',{self.channel_id},{PulsePalTriggerChannel.TRIGGER1 in self.__trigger_source})")
+        logger.debug(
+            f"PulsePal.programOutputChannelParam('linkTriggerChannel1',{self.channel_id},{PulsePalTriggerChannel.TRIGGER1 in self.__trigger_source})"
+        )
         self.pulsepal.programOutputChannelParam(
             "linkTriggerChannel2",
             self.channel_id,
             PulsePalTriggerChannel.TRIGGER2 in self.__trigger_source,
         )
-        logger.debug(f"PulsePal.programOutputChannelParam('linkTriggerChannel2',{self.channel_id},{PulsePalTriggerChannel.TRIGGER2 in self.__trigger_source})")
+        logger.debug(
+            f"PulsePal.programOutputChannelParam('linkTriggerChannel2',{self.channel_id},{PulsePalTriggerChannel.TRIGGER2 in self.__trigger_source})"
+        )
 
     @property
     def custom_train_id(self) -> PulsePalCustomTrainID:
@@ -388,7 +449,6 @@ class PulsePalOutputChannel(object):
         self.train_duration = self.train_duration
 
 
-
 # noinspection PyPep8Naming
 class DummyPulsePalObject(PulsePalObject):
     # noinspection PyMissingConstructor,PyUnusedLocal
@@ -441,6 +501,9 @@ class PulsePalChannelWidget(QWidget):
     baselineVoltageSpinBox: ScienDSpinBox
     phase1VoltageSpinBox: ScienDSpinBox
     phase2VoltageSpinBox: ScienDSpinBox
+    phase2VoltageLabel: QLabel
+    phase2DurationLabel: QLabel
+    interPhaseIntervalLabel: QLabel
 
     burstModeGroupBox: QGroupBox
     burstDurationSpinBox: ScienDSpinBox
@@ -476,8 +539,8 @@ class PulsePalChannelWidget(QWidget):
         super().__init__()
         # noinspection SpellCheckingInspection
         uic.loadUi("src/channelwidget.ui", self)
-        self.__channel = channel
-        self.__phase2_widgets = [
+        self._channel = channel
+        self._biphasic_widgets = [
             self.phase2VoltageSpinBox,
             self.phase2VoltageLabel,
             self.phase2DurationSpinBox,
@@ -487,65 +550,61 @@ class PulsePalChannelWidget(QWidget):
         ]
 
         # SLOTS
-        self.outputModeButtonGroup.buttonToggled.connect(self.__toggle_output_mode)
-        self.burstModeGroupBox.toggled.connect(self.__toggle_burst_mode)
-        self.trigger1CheckBox.toggled.connect(self.__toggle_trigger1_source)
-        self.trigger2CheckBox.toggled.connect(self.__toggle_trigger2_source)
-        self.softTriggerPushButton.clicked.connect(self.__do_soft_trigger)
-
-        self.baselineVoltageSpinBox.valueChanged.connect(self.__update_baseline_voltage)
-        self.phase1VoltageSpinBox.valueChanged.connect(self.__update_phase1_voltage)
-        self.phase2VoltageSpinBox.valueChanged.connect(self.__update_phase2_voltage)
-        self.trainDelaySpinBox.valueChanged.connect(self.__update_train_delay)
-        self.trainDurationSpinBox.valueChanged.connect(self.__update_train_duration)
-        self.phase1DurationSpinBox.valueChanged.connect(self.__update_phase1_duration)
-        self.phase2DurationSpinBox.valueChanged.connect(self.__update_phase2_duration)
+        self.outputModeButtonGroup.buttonToggled.connect(self._toggle_output_mode)
+        self.burstModeGroupBox.toggled.connect(self._toggle_burst_mode)
+        self.trigger1CheckBox.toggled.connect(self._toggle_trigger1_source)
+        self.trigger2CheckBox.toggled.connect(self._toggle_trigger2_source)
+        self.softTriggerPushButton.clicked.connect(self._do_soft_trigger)
+        self.baselineVoltageSpinBox.valueChanged.connect(self._update_baseline_voltage)
+        self.phase1VoltageSpinBox.valueChanged.connect(self._update_phase1_voltage)
+        self.phase2VoltageSpinBox.valueChanged.connect(self._update_phase2_voltage)
+        self.trainDelaySpinBox.valueChanged.connect(self._update_train_delay)
+        self.trainDurationSpinBox.valueChanged.connect(self._update_train_duration)
+        self.phase1DurationSpinBox.valueChanged.connect(self._update_phase1_duration)
+        self.phase2DurationSpinBox.valueChanged.connect(self._update_phase2_duration)
         self.interPhaseIntervalSpinBox.valueChanged.connect(
-            self.__update_interphase_interval
+            self._update_interphase_interval
         )
-        self.pulseIntervalSpinBox.valueChanged.connect(
-            self.__update_interpulse_interval
-        )
-        self.burstDurationSpinBox.valueChanged.connect(self.__update_burst_duration)
+        self.pulseIntervalSpinBox.valueChanged.connect(self._update_interpulse_interval)
+        self.burstDurationSpinBox.valueChanged.connect(self._update_burst_duration)
         self.interBurstIntervalSpinBox.valueChanged.connect(
-            self.__update_interburst_interval
+            self._update_interburst_interval
         )
+        # END SLOTS
 
         self.update_all_content()
 
     def update_all_content(self):
-        self.baselineVoltageSpinBox.setValue(self.__channel.baseline_voltage)
-        self.phase1VoltageSpinBox.setValue(self.__channel.phase1_voltage)
-        self.phase2VoltageSpinBox.setValue(self.__channel.phase2_voltage)
+        self.baselineVoltageSpinBox.setValue(self._channel.baseline_voltage)
+        self.phase1VoltageSpinBox.setValue(self._channel.phase1_voltage)
+        self.phase2VoltageSpinBox.setValue(self._channel.phase2_voltage)
 
-        self.burstModeGroupBox.setChecked(self.__channel.is_burst)
-        self.burstDurationSpinBox.setValue(self.__channel.burst_duration)
-        self.interBurstIntervalSpinBox.setValue(self.__channel.interburst_interval)
+        self.burstModeGroupBox.setChecked(self._channel.is_burst)
+        self.burstDurationSpinBox.setValue(self._channel.burst_duration)
+        self.interBurstIntervalSpinBox.setValue(self._channel.interburst_interval)
 
-        self.interPhaseIntervalSpinBox.setValue(self.__channel.interphase_interval)
-        self.phase1DurationSpinBox.setValue(self.__channel.phase1_duration)
-        self.phase2DurationSpinBox.setValue(self.__channel.phase2_duration)
-        self.pulseIntervalSpinBox.setValue(self.__channel.interpulse_interval)
-        self.trainDelaySpinBox.setValue(self.__channel.train_delay)
-        self.trainDurationSpinBox.setValue(self.__channel.train_duration)
+        self.interPhaseIntervalSpinBox.setValue(self._channel.interphase_interval)
+        self.phase1DurationSpinBox.setValue(self._channel.phase1_duration)
+        self.phase2DurationSpinBox.setValue(self._channel.phase2_duration)
+        self.pulseIntervalSpinBox.setValue(self._channel.interpulse_interval)
+        self.trainDelaySpinBox.setValue(self._channel.train_delay)
+        self.trainDurationSpinBox.setValue(self._channel.train_duration)
 
         self.trigger1CheckBox.setChecked(
-            PulsePalTriggerChannel.TRIGGER1 in self.__channel.trigger_source
+            PulsePalTriggerChannel.TRIGGER1 in self._channel.trigger_source
         )
         self.trigger2CheckBox.setChecked(
-            PulsePalTriggerChannel.TRIGGER2 in self.__channel.trigger_source
+            PulsePalTriggerChannel.TRIGGER2 in self._channel.trigger_source
         )
-        self.outputModeBiphasicRadioButton.setChecked(self.__channel.is_biphasic)
-        self.outputModeMonophasicRadioButton.setChecked(not self.__channel.is_biphasic)
+        self.outputModeBiphasicRadioButton.setChecked(self._channel.is_biphasic)
+        self.outputModeMonophasicRadioButton.setChecked(not self._channel.is_biphasic)
         self.__update_schema()
-        self.__toggle_output_mode(None,None)
-        self.__toggle_burst_mode(None)
-        
-
+        self._toggle_output_mode(None, None)
+        self._toggle_burst_mode(self._channel.is_burst)
 
     def __update_schema(self):
-        if not self.__channel.is_biphasic:
-            if not self.__channel.is_burst:
+        if not self._channel.is_biphasic:
+            if not self._channel.is_burst:
                 self.schemaLabel.setPixmap(
                     QPixmap(":/pixmaps/PulseSchemaMonopolarNoBurst.png")
                 )
@@ -554,7 +613,7 @@ class PulsePalChannelWidget(QWidget):
                     QPixmap(":/pixmaps/PulseSchemaMonopolarBurst.png")
                 )
         else:
-            if not self.__channel.is_burst:
+            if not self._channel.is_burst:
                 self.schemaLabel.setPixmap(
                     QPixmap(":/pixmaps/PulseSchemaBipolarNoBurst.png")
                 )
@@ -564,9 +623,9 @@ class PulsePalChannelWidget(QWidget):
                 )
 
     # noinspection PyUnusedLocal
-    def __toggle_output_mode(self, btn, checked):
-        self.__channel.is_biphasic = self.outputModeBiphasicRadioButton.isChecked()
-        for widget in self.__phase2_widgets:
+    def _toggle_output_mode(self, btn, checked):
+        self._channel.is_biphasic = self.outputModeBiphasicRadioButton.isChecked()
+        for widget in self._biphasic_widgets:
             widget.setEnabled(self.outputModeBiphasicRadioButton.isChecked())
             # this ensures the values are propagated to the channel when the widget becomes enabled.
             # Not sure that this is truly needed
@@ -574,57 +633,57 @@ class PulsePalChannelWidget(QWidget):
                 widget.valueChanged.emit(widget.value())
         self.__update_schema()
 
-    def __toggle_burst_mode(self, checked):
-        self.__channel.is_burst = checked
+    def _toggle_burst_mode(self, checked):
+        self._channel.is_burst = checked
         self.__update_schema()
 
-    def __toggle_trigger1_source(self, checked):
+    def _toggle_trigger1_source(self, checked):
         if checked:
-            self.__channel.enable_trigger_source(PulsePalTriggerChannel.TRIGGER1)
+            self._channel.enable_trigger_source(PulsePalTriggerChannel.TRIGGER1)
         else:
-            self.__channel.disable_trigger_source(PulsePalTriggerChannel.TRIGGER1)
+            self._channel.disable_trigger_source(PulsePalTriggerChannel.TRIGGER1)
 
-    def __toggle_trigger2_source(self, checked):
+    def _toggle_trigger2_source(self, checked):
         if checked:
-            self.__channel.enable_trigger_source(PulsePalTriggerChannel.TRIGGER2)
+            self._channel.enable_trigger_source(PulsePalTriggerChannel.TRIGGER2)
         else:
-            self.__channel.disable_trigger_source(PulsePalTriggerChannel.TRIGGER2)
+            self._channel.disable_trigger_source(PulsePalTriggerChannel.TRIGGER2)
 
-    def __do_soft_trigger(self):
-        self.__channel.do_soft_trigger()
+    def _do_soft_trigger(self):
+        self._channel.do_soft_trigger()
 
-    def __update_baseline_voltage(self, value):
-        self.__channel.baseline_voltage = value
+    def _update_baseline_voltage(self, value):
+        self._channel.baseline_voltage = value
 
-    def __update_phase1_voltage(self, value):
-        self.__channel.phase1_voltage = value
+    def _update_phase1_voltage(self, value):
+        self._channel.phase1_voltage = value
 
-    def __update_phase2_voltage(self, value):
-        self.__channel.phase2_voltage = value
+    def _update_phase2_voltage(self, value):
+        self._channel.phase2_voltage = value
 
-    def __update_train_delay(self, value):
-        self.__channel.train_delay = value
+    def _update_train_delay(self, value):
+        self._channel.train_delay = value
 
-    def __update_train_duration(self, value):
-        self.__channel.train_duration = value
+    def _update_train_duration(self, value):
+        self._channel.train_duration = value
 
-    def __update_phase1_duration(self, value):
-        self.__channel.phase1_duration = value
+    def _update_phase1_duration(self, value):
+        self._channel.phase1_duration = value
 
-    def __update_phase2_duration(self, value):
-        self.__channel.phase2_duration = value
+    def _update_phase2_duration(self, value):
+        self._channel.phase2_duration = value
 
-    def __update_interphase_interval(self, value):
-        self.__channel.interphase_interval = value
+    def _update_interphase_interval(self, value):
+        self._channel.interphase_interval = value
 
-    def __update_interpulse_interval(self, value):
-        self.__channel.interpulse_interval = value
+    def _update_interpulse_interval(self, value):
+        self._channel.interpulse_interval = value
 
-    def __update_burst_duration(self, value):
-        self.__channel.burst_duration = value
+    def _update_burst_duration(self, value):
+        self._channel.burst_duration = value
 
-    def __update_interburst_interval(self, value):
-        self.__channel.interburst_interval = value
+    def _update_interburst_interval(self, value):
+        self._channel.interburst_interval = value
 
 
 class MainWindow(QMainWindow):

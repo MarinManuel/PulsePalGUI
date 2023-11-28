@@ -1,18 +1,18 @@
 <RCC>
   <qresource prefix="pixmaps">
-    <file>PulseSchemaBipolarBurst.png</file>
-    <file>PulseSchemaBipolarNoBurst.png</file>
-    <file>PulseSchemaMonopolarBurst.png</file>
-    <file>PulseSchemaMonopolarNoBurst.png</file>
+    <file>originals/PulseSchemaBipolarBurst.png</file>
+    <file>originals/PulseSchemaBipolarNoBurst.png</file>
+    <file>originals/PulseSchemaMonopolarBurst.png</file>
+    <file>originals/PulseSchemaMonopolarNoBurst.png</file>
   </qresource>
   <qresource prefix="icons">
-    <file>waveform.png</file>
-    <file>pulse_train.png</file>
-    <file>about</file>
-    <file>exit</file>
-    <file>cancel</file>
-    <file>disconnected</file>
-    <file>connected</file>
-    <file>lightning</file>
+    <file>originals/waveform.png</file>
+    <file>originals/pulse_train.png</file>
+    <file>originals/about</file>
+    <file>originals/exit</file>
+    <file>originals/cancel</file>
+    <file>originals/disconnected</file>
+    <file>originals/connected</file>
+    <file>originals/lightning</file>
   </qresource>
 </RCC>
