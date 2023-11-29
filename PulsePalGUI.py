@@ -1,12 +1,19 @@
 import argparse
 import logging
 
-from PyQt5.QtWidgets import QApplication, QInputDialog
-from src.PulsePalGUI import MainWindow, discover_ports, DummyPulsePalObject
+from PyQt5.QtWidgets import QApplication
+
 from src.PulsePal import PulsePalObject, PulsePalError
+from src.PulsePalGUI import (
+    MainWindow,
+    discover_ports,
+    DummyPulsePalObject,
+    choose_port_dialog,
+)
 
 logger = logging.getLogger("PulsePalGUI")
 handler = logging.StreamHandler()
+# noinspection SpellCheckingInspection
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
@@ -36,7 +43,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--debug",
         action="store_true",
-        dest='debug_mode',
+        dest="debug_mode",
         help="use a dummy pulsepal simulator instead of the real hardware",
     )
     args = parser.parse_args()
@@ -51,15 +58,12 @@ if __name__ == "__main__":
         possible_ports = discover_ports()
         if len(possible_ports) > 1:
             # there are more than 1 valid port.
-            items = [f"{p.name} ({p.description})" for p in possible_ports]
-            item, ok = QInputDialog().getItem(
-                None, "Choose the correct serial port", "Serial ports:", items, 0, False
+            logger.info(
+                f"Found serial ports {','.join([p.device for p in possible_ports])}. Asking user to choose one"
             )
-            if ok:
-                item_id = possible_ports.index(item)
-                args.port = possible_ports[item_id].name
+            args.port = choose_port_dialog(possible_ports)
         elif len(possible_ports) == 1:
-            args.port = possible_ports[0].name
+            args.port = possible_ports[0].device
             logger.info(f"Found serial port [{args.port}]")
         else:
             args.port = None

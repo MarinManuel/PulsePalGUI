@@ -20,7 +20,11 @@ from PyQt5.QtWidgets import (
     QToolButton,
     QLayout,
     QAction,
+    QInputDialog,
 )
+from typing import List
+
+from serial.tools.list_ports_common import ListPortInfo
 
 # noinspection PyUnresolvedReferences
 import resources.resources as resources
@@ -47,6 +51,18 @@ def discover_ports(pattern=PULSE_PAL_SERIAL_HWINFO):
     ports = list(serial.tools.list_ports.grep(pattern))
     logger.debug(f"Found: {ports}")
     return ports
+
+
+def choose_port_dialog(possible_ports: List[ListPortInfo]):
+    ret_val = None
+    items = [f"{p.name} ({p.description})" for p in possible_ports]
+    item, ok = QInputDialog().getItem(
+        None, "Choose the correct serial port", "Serial ports:", items, 0, False
+    )
+    if ok:
+        item_id = items.index(item)
+        ret_val = possible_ports[item_id].device
+    return ret_val
 
 
 class PulsePalTriggerMode(IntEnum):
