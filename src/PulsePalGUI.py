@@ -1,6 +1,8 @@
 import logging
 from enum import IntEnum
+from typing import List
 
+import numpy as np
 import serial.tools.list_ports
 
 # noinspection PyUnresolvedReferences
@@ -21,9 +23,8 @@ from PyQt5.QtWidgets import (
     QLayout,
     QAction,
     QInputDialog,
+    QDoubleSpinBox,
 )
-from typing import List
-
 from serial.tools.list_ports_common import ListPortInfo
 
 # noinspection PyUnresolvedReferences
@@ -115,6 +116,7 @@ class PulsePalOutputChannel(object):
     __custom_train_id: PulsePalCustomTrainID
     __custom_train_target: PulsePalCustomTrainTarget
     __custom_train_loop: PulsePalCustomTrainLoop
+    __fixed_voltage: float
 
     def __init__(self, channel_id, pulsepal: PulsePalObject):
         self.channel_id = channel_id
@@ -135,6 +137,7 @@ class PulsePalOutputChannel(object):
         self.train_duration = 5.0
         self.is_burst = False
         self.disable_trigger_source()
+        self.fixed_voltage = 0.0
 
     @property
     def is_biphasic(self) -> bool:
@@ -449,20 +452,20 @@ class PulsePalOutputChannel(object):
         self.pulsepal.triggerOutputChannels(*channels)
         logger.debug(f"PulsePal.triggerOutputChannels({channels})")
 
-    def update_all(self):
-        self.is_biphasic = self.is_biphasic
-        self.baseline_voltage = self.baseline_voltage
-        self.phase1_voltage = self.phase1_voltage
-        self.phase2_voltage = self.phase2_voltage
-        self.phase1_duration = self.phase1_duration
-        self.phase2_duration = self.phase2_duration
-        self.interpulse_interval = self.interpulse_interval
-        self.interphase_interval = self.interphase_interval
-        self.interburst_interval = self.interburst_interval
-        self.burst_duration = self.burst_duration
-        self.is_burst = self.is_burst
-        self.train_delay = self.train_delay
-        self.train_duration = self.train_duration
+    @property
+    def fixed_voltage(self):
+        return self.__fixed_voltage
+
+    @fixed_voltage.setter
+    def fixed_voltage(self, value):
+        self.__fixed_voltage = value
+        logger.debug(
+            f"Setting Fixed Voltage Output on Ch{self.channel_id} to {self.__fixed_voltage}V"
+        )
+        self.pulsepal.setFixedVoltage(self.channel_id, self.__fixed_voltage)
+        logger.debug(
+            f"PulsePal.setFixedVoltage({self.channel_id}, {self.__fixed_voltage})"
+        )
 
 
 # noinspection PyPep8Naming
@@ -551,6 +554,10 @@ class PulsePalChannelWidget(QWidget):
 
     schemaLabel: QLabel
 
+    fixedVoltGroupBox: QGroupBox
+    fixedVoltSpinBox: ScienDSpinBox
+    fixedVoltPctSpinBox: QDoubleSpinBox
+
     def __init__(self, channel: PulsePalOutputChannel):
         super().__init__()
         # noinspection SpellCheckingInspection
@@ -586,6 +593,9 @@ class PulsePalChannelWidget(QWidget):
         self.interBurstIntervalSpinBox.valueChanged.connect(
             self._update_interburst_interval
         )
+        self.fixedVoltGroupBox.toggled.connect(self._toggle_fixedVolt)
+        self.fixedVoltSpinBox.valueChanged.connect(self._update_fixedVolt)
+        self.fixedVoltPctSpinBox.valueChanged.connect(self._update_fixedVoltPct)
         # END SLOTS
 
         self.update_all_content()
@@ -614,6 +624,10 @@ class PulsePalChannelWidget(QWidget):
         )
         self.outputModeBiphasicRadioButton.setChecked(self._channel.is_biphasic)
         self.outputModeMonophasicRadioButton.setChecked(not self._channel.is_biphasic)
+
+        self.fixedVoltSpinBox.setValue(self._channel.fixed_voltage)
+        self.fixedVoltGroupBox.setChecked(self._channel.fixed_voltage != 0)
+
         self.__update_schema()
         self._toggle_output_mode(None, None)
         self._toggle_burst_mode(self._channel.is_burst)
@@ -700,6 +714,31 @@ class PulsePalChannelWidget(QWidget):
 
     def _update_interburst_interval(self, value):
         self._channel.interburst_interval = value
+
+    def _toggle_fixedVolt(self, checked):
+        if checked:
+            self._channel.fixed_voltage = self.fixedVoltSpinBox.value()
+        else:
+            self._channel.fixed_voltage = 0.0
+
+    def _update_fixedVolt(self, value):
+        self._channel.fixed_voltage = value
+        pct = np.interp(
+            value,
+            [self.fixedVoltSpinBox.minimum(), self.fixedVoltSpinBox.maximum()],
+            [self.fixedVoltPctSpinBox.minimum(), self.fixedVoltPctSpinBox.maximum()],
+        )
+        # old_state = self.fixedVoltPctSpinBox.blockSignals(True)
+        self.fixedVoltPctSpinBox.setValue(pct)
+        # self.fixedVoltPctSpinBox.blockSignals(old_state)
+
+    def _update_fixedVoltPct(self, value):
+        val = np.interp(
+            value,
+            [self.fixedVoltPctSpinBox.minimum(), self.fixedVoltPctSpinBox.maximum()],
+            [self.fixedVoltSpinBox.minimum(), self.fixedVoltSpinBox.maximum()],
+        )
+        self.fixedVoltSpinBox.setValue(val)
 
 
 class MainWindow(QMainWindow):

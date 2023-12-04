@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# fmt: off
 """
 This file contains a wrapper to display the SpinBox in scientific way
 
@@ -16,14 +17,14 @@ You should have received a copy of the GNU General Public License
 along with Qudi. If not, see <http://www.gnu.org/licenses/>.
 """
 
-import sys
-from PyQt5 import QtCore, QtGui, QtWidgets
-import numpy as np
+import math
 import re
+import sys
 from decimal import Decimal as D  # Use decimal to avoid accumulating floating-point errors
 from decimal import ROUND_FLOOR
-import math
 
+import numpy as np
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 __all__ = ['ScienDSpinBox', 'ScienSpinBox']
 
@@ -250,17 +251,17 @@ class ScienDSpinBox(QtWidgets.QAbstractSpinBox):
 
     def __init__(self, *args, **kwargs):
         super(ScienDSpinBox, self).__init__(*args, **kwargs)
-        self.__value = D(0)
+        self.__value = D('0.00')
         self.__minimum = -np.inf
         self.__maximum = np.inf
-        self.__decimals = 1  # default in QtDesigner
+        self.__decimals = 2  # default in QtDesigner
         self.__prefix = ''
         self.__suffix = ''
         self.__singleStep = D('0.1')  # must be precise Decimal always, no conversion from float
-        self.__minimalStep = D(0)  # must be precise Decimal always, no conversion from float
+        self.__minimalStep = D('0.01')  # must be precise Decimal always, no conversion from float
         self.__cached_value = None  # a temporary variable for restore functionality
-        self._dynamic_stepping = True
-        self._dynamic_precision = True
+        self._dynamic_stepping = False
+        self._dynamic_precision = False
         self._is_valid = True  # A flag property to check if the current value is valid.
         self.validator = FloatValidator()
         self.errorBox = ErrorBox(self.lineEdit())
@@ -499,7 +500,7 @@ class ScienDSpinBox(QtWidgets.QAbstractSpinBox):
     def decimals(self):
         return self.__decimals
 
-    def setDecimals(self, decimals, dynamic_precision=True):
+    def setDecimals(self, decimals, dynamic_precision=False):
         """
         Method to set the number of displayed digits after the decimal point.
         Also specifies if the dynamic precision functionality should be used or not.
@@ -551,7 +552,7 @@ class ScienDSpinBox(QtWidgets.QAbstractSpinBox):
     def singleStep(self):
         return float(self.__singleStep)
 
-    def setSingleStep(self, step, dynamic_stepping=True):
+    def setSingleStep(self, step, dynamic_stepping=False):
         """
         Method to set the stepping behaviour of the spinbox (e.g. when moving the mouse wheel).
 
@@ -1542,3 +1543,5 @@ class ReadingSpinBox(ScienSpinBox):
 
         if not self.hasFocus():
             self.setValue(value)
+
+# fmt: on
