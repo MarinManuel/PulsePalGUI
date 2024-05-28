@@ -21,7 +21,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normalon>:/icons/pulse_train.png</normalon>
+    <normalon>:/icons/pulse_train</normalon>
    </iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
