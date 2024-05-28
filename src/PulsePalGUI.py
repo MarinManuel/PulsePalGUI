@@ -145,7 +145,7 @@ class PulsePalOutputChannel(object):
 
     @is_biphasic.setter
     def is_biphasic(self, value: bool):
-        logger.debug(f"PulsePalOutputChannel.is_biphasic({value})")
+        logger.debug(f"PulsePalOutputChannel[{self.channel_id}].is_biphasic({value})")
         self.__biphasic = value
         self.pulsepal.programOutputChannelParam(
             "isBiphasic", self.channel_id, int(value)
@@ -160,7 +160,7 @@ class PulsePalOutputChannel(object):
 
     @baseline_voltage.setter
     def baseline_voltage(self, value: float):
-        logger.debug(f"PulsePalOutputChannel.baseline_voltage({value})")
+        logger.debug(f"PulsePalOutputChannel[{self.channel_id}].baseline_voltage({value})")
         self.__baseline_voltage = constrain_value(
             value, self.MIN_VOLTAGE, self.MAX_VOLTAGE
         )
@@ -177,7 +177,7 @@ class PulsePalOutputChannel(object):
 
     @phase1_duration.setter
     def phase1_duration(self, value: float):
-        logger.debug(f"PulsePalOutputChannel.phase1_duration({value})")
+        logger.debug(f"PulsePalOutputChannel[{self.channel_id}].phase1_duration({value})")
         self.__phase1_duration = constrain_value(
             value, self.MIN_DURATION, self.MAX_DURATION
         )
@@ -194,7 +194,7 @@ class PulsePalOutputChannel(object):
 
     @phase1_voltage.setter
     def phase1_voltage(self, value: float):
-        logger.debug(f"PulsePalOutputChannel.phase1_voltage({value})")
+        logger.debug(f"PulsePalOutputChannel[{self.channel_id}].phase1_voltage({value})")
         self.__phase1_voltage = constrain_value(
             value, self.MIN_VOLTAGE, self.MAX_VOLTAGE
         )
@@ -211,7 +211,7 @@ class PulsePalOutputChannel(object):
 
     @phase2_voltage.setter
     def phase2_voltage(self, value: float):
-        logger.debug(f"PulsePalOutputChannel.phase2_voltage({value})")
+        logger.debug(f"PulsePalOutputChannel[{self.channel_id}].phase2_voltage({value})")
         self.__phase2_voltage = constrain_value(
             value, self.MIN_VOLTAGE, self.MAX_VOLTAGE
         )
@@ -228,7 +228,7 @@ class PulsePalOutputChannel(object):
 
     @phase2_duration.setter
     def phase2_duration(self, value: float):
-        logger.debug(f"PulsePalOutputChannel.phase2_duration({value})")
+        logger.debug(f"PulsePalOutputChannel[{self.channel_id}].phase2_duration({value})")
         self.__phase2_duration = constrain_value(
             value, self.MIN_DURATION, self.MAX_DURATION
         )
@@ -245,7 +245,7 @@ class PulsePalOutputChannel(object):
 
     @interphase_interval.setter
     def interphase_interval(self, value):
-        logger.debug(f"PulsePalOutputChannel.interphase_interval({value})")
+        logger.debug(f"PulsePalOutputChannel[{self.channel_id}].interphase_interval({value})")
         self.__interphase_interval = constrain_value(
             value, self.MIN_DURATION, self.MAX_DURATION
         )
@@ -262,7 +262,7 @@ class PulsePalOutputChannel(object):
 
     @interpulse_interval.setter
     def interpulse_interval(self, value):
-        logger.debug(f"PulsePalOutputChannel.interpulse_interval({value})")
+        logger.debug(f"PulsePalOutputChannel[{self.channel_id}].interpulse_interval({value})")
         self.__interpulse_interval = constrain_value(
             value, self.MIN_DURATION, self.MAX_DURATION
         )
@@ -279,7 +279,7 @@ class PulsePalOutputChannel(object):
 
     @interburst_interval.setter
     def interburst_interval(self, value):
-        logger.debug(f"PulsePalOutputChannel.interburst_interval({value})")
+        logger.debug(f"PulsePalOutputChannel[{self.channel_id}].interburst_interval({value})")
         self.__interburst_interval = constrain_value(
             value, self.MIN_DURATION, self.MAX_DURATION
         )
@@ -296,7 +296,7 @@ class PulsePalOutputChannel(object):
 
     @is_burst.setter
     def is_burst(self, value: bool):
-        logger.debug(f"PulsePalOutputChannel.is_burst({value})")
+        logger.debug(f"PulsePalOutputChannel[{self.channel_id}].is_burst({value})")
         self.__burst_mode = value
         if self.is_burst:
             logger.debug(
@@ -323,7 +323,7 @@ class PulsePalOutputChannel(object):
 
     @burst_duration.setter
     def burst_duration(self, value):
-        logger.debug(f"PulsePalOutputChannel.burst_duration({value})")
+        logger.debug(f"PulsePalOutputChannel[{self.channel_id}].burst_duration({value})")
         self.__burst_duration = constrain_value(
             value, self.MIN_DURATION, self.MAX_DURATION
         )
@@ -340,7 +340,7 @@ class PulsePalOutputChannel(object):
 
     @train_delay.setter
     def train_delay(self, value: float):
-        logger.debug(f"PulsePalOutputChannel.train_delay({value})")
+        logger.debug(f"PulsePalOutputChannel[{self.channel_id}].train_delay({value})")
         self.__train_delay = constrain_value(value, 0.0, self.MAX_DURATION)
         self.pulsepal.programOutputChannelParam(
             "pulseTrainDelay", self.channel_id, self.__train_delay
@@ -355,7 +355,7 @@ class PulsePalOutputChannel(object):
 
     @train_duration.setter
     def train_duration(self, value: float):
-        logger.debug(f"PulsePalOutputChannel.train_duration({value})")
+        logger.debug(f"PulsePalOutputChannel[{self.channel_id}].train_duration({value})")
         self.__train_duration = constrain_value(
             value, self.MIN_DURATION, self.MAX_DURATION
         )
@@ -375,7 +375,7 @@ class PulsePalOutputChannel(object):
         adds a trigger for that channel
         :param value: either PulsePalTriggerChannel.TRIGGER or either PulsePalTriggerChannel.TRIGGER2
         """
-        logger.debug(f"PulsePalOutputChannel.enable_trigger_source({value})")
+        logger.debug(f"PulsePalOutputChannel[{self.channel_id}].enable_trigger_source({value})")
         self.__trigger_source.add(value)
         self.__update_trigger_source()
         logger.debug(
@@ -387,7 +387,7 @@ class PulsePalOutputChannel(object):
         removes a trigger source from the list of triggers for that channels
         :param value: either PulsePalTriggerChannel.TRIGGER1, either PulsePalTriggerChannel.TRIGGER2, or None (in which case all triggers are removed)
         """
-        logger.debug(f"PulsePalOutputChannel.disable_trigger_source({value})")
+        logger.debug(f"PulsePalOutputChannel[{self.channel_id}].disable_trigger_source({value})")
         if value is not None:
             self.__trigger_source.discard(value)
         else:
@@ -421,7 +421,7 @@ class PulsePalOutputChannel(object):
 
     @custom_train_id.setter
     def custom_train_id(self, value: PulsePalCustomTrainID):
-        logger.debug(f"PulsePalOutputChannel.custom_train_id({value})")
+        logger.debug(f"PulsePalOutputChannel[{self.channel_id}].custom_train_id({value})")
         self.__custom_train_id = value
         # self.pulsepal.programOutputChannelParam('', self.channel_id, )  # FIXME
 
@@ -431,7 +431,7 @@ class PulsePalOutputChannel(object):
 
     @custom_train_target.setter
     def custom_train_target(self, value: PulsePalCustomTrainTarget):
-        logger.debug(f"PulsePalOutputChannel.custom_train_target({value})")
+        logger.debug(f"PulsePalOutputChannel[{self.channel_id}].custom_train_target({value})")
         self.__custom_train_target = value
         # self.pulsepal.programOutputChannelParam('', self.channel_id, )  # FIXME
 
@@ -441,7 +441,7 @@ class PulsePalOutputChannel(object):
 
     @custom_train_loop.setter
     def custom_train_loop(self, value: PulsePalCustomTrainLoop):
-        logger.debug(f"PulsePalOutputChannel.custom_train_loop({value})")
+        logger.debug(f"PulsePalOutputChannel[{self.channel_id}].custom_train_loop({value})")
         self.__custom_train_loop = value
         # self.pulsepal.programOutputChannelParam('', self.channel_id, )  # FIXME
 
@@ -772,6 +772,7 @@ class MainWindow(QMainWindow):
             ch = PulsePalOutputChannel(ch_id + 1, pulsepal)
             widget = PulsePalChannelWidget(ch)
             self.channelsTabWidget.addTab(widget, f"Channel {ch.channel_id}")
+        self.pulsepal.syncAllParams()  # 20240528-MM Fix issue #1
 
         self.layout().setSizeConstraint(QLayout.SetFixedSize)  # FIXME
 
