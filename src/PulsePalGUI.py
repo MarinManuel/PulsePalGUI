@@ -23,7 +23,7 @@ from PyQt5.QtWidgets import (
     QLayout,
     QAction,
     QInputDialog,
-    QDoubleSpinBox,
+    QDoubleSpinBox, QDialog,
 )
 from serial.tools.list_ports_common import ListPortInfo
 
@@ -636,20 +636,20 @@ class PulsePalChannelWidget(QWidget):
         if not self._channel.is_biphasic:
             if not self._channel.is_burst:
                 self.schemaLabel.setPixmap(
-                    QPixmap(":/pixmaps/PulseSchemaMonopolarNoBurst.png")
+                    QPixmap(":/pixmaps/PulseSchemaMonopolarNoBurst")
                 )
             else:
                 self.schemaLabel.setPixmap(
-                    QPixmap(":/pixmaps/PulseSchemaMonopolarBurst.png")
+                    QPixmap(":/pixmaps/PulseSchemaMonopolarBurst")
                 )
         else:
             if not self._channel.is_burst:
                 self.schemaLabel.setPixmap(
-                    QPixmap(":/pixmaps/PulseSchemaBipolarNoBurst.png")
+                    QPixmap(":/pixmaps/PulseSchemaBipolarNoBurst")
                 )
             else:
                 self.schemaLabel.setPixmap(
-                    QPixmap(":/pixmaps/PulseSchemaBipolarBurst.png")
+                    QPixmap(":/pixmaps/PulseSchemaBipolarBurst")
                 )
 
     # noinspection PyUnusedLocal
@@ -740,6 +740,10 @@ class PulsePalChannelWidget(QWidget):
         )
         self.fixedVoltSpinBox.setValue(val)
 
+class AboutDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        uic.loadUi("src/AboutDlg.ui", self)
 
 class MainWindow(QMainWindow):
     channelsTabWidget: QTabWidget
@@ -761,6 +765,8 @@ class MainWindow(QMainWindow):
     action_Quit: QAction
     action_About: QAction
     action_Abort: QAction
+    action_Save: QAction
+    action_Open: QAction
 
     def __init__(self, pulsepal: PulsePalObject):
         super().__init__()
@@ -796,7 +802,8 @@ class MainWindow(QMainWindow):
         pass
 
     def __action_about(self, checked):
-        pass
+        dlg = AboutDialog(self)
+        dlg.show()
 
     # noinspection PyUnusedLocal
     def __action_abort(self, checked):

@@ -201,7 +201,7 @@
          </property>
          <property name="icon">
           <iconset>
-           <normalon>:/icons/pulse_train.png</normalon>
+           <normalon>:/icons/pulse_train</normalon>
           </iconset>
          </property>
          <property name="iconSize">
@@ -222,7 +222,7 @@
          </property>
          <property name="icon">
           <iconset>
-           <normalon>:/icons/waveform.png</normalon>
+           <normalon>:/icons/waveform</normalon>
           </iconset>
          </property>
         </widget>
@@ -237,7 +237,7 @@
          </property>
          <property name="icon">
           <iconset>
-           <normalon>:/icons/pulse_train.png</normalon>
+           <normalon>:/icons/pulse_train</normalon>
           </iconset>
          </property>
         </widget>
@@ -252,7 +252,7 @@
          </property>
          <property name="icon">
           <iconset>
-           <normalon>:/icons/waveform.png</normalon>
+           <normalon>:/icons/waveform</normalon>
           </iconset>
          </property>
         </widget>
@@ -287,13 +287,16 @@
      <x>0</x>
      <y>0</y>
      <width>718</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
     <property name="title">
      <string>&amp;File</string>
     </property>
+    <addaction name="action_Open"/>
+    <addaction name="action_Save"/>
+    <addaction name="separator"/>
     <addaction name="action_Connect"/>
     <addaction name="separator"/>
     <addaction name="action_Quit"/>
@@ -318,6 +321,8 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="action_Open"/>
+   <addaction name="action_Save"/>
    <addaction name="action_Connect"/>
    <addaction name="action_Abort"/>
   </widget>
@@ -358,6 +363,36 @@
    </property>
    <property name="toolTip">
     <string>Terminates all pulse trains currently playing on the device</string>
+   </property>
+  </action>
+  <action name="action_Open">
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/icons/open</normaloff>:/icons/open</iconset>
+   </property>
+   <property name="text">
+    <string>Open</string>
+   </property>
+   <property name="toolTip">
+    <string>Open a configuarion file</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="action_Save">
+   <property name="icon">
+    <iconset resource="../resources/resources.qrc">
+     <normaloff>:/icons/save</normaloff>:/icons/save</iconset>
+   </property>
+   <property name="text">
+    <string>Save</string>
+   </property>
+   <property name="toolTip">
+    <string>Save current configuration to file</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
  </widget>
