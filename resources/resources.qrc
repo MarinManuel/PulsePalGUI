@@ -1,18 +1,21 @@
 <RCC>
-  <qresource prefix="pixmaps">
-    <file>originals/PulseSchemaBipolarBurst.png</file>
-    <file>originals/PulseSchemaBipolarNoBurst.png</file>
-    <file>originals/PulseSchemaMonopolarBurst.png</file>
-    <file>originals/PulseSchemaMonopolarNoBurst.png</file>
-  </qresource>
-  <qresource prefix="icons">
-    <file>originals/waveform.png</file>
-    <file>originals/pulse_train.png</file>
-    <file>originals/about</file>
-    <file>originals/exit</file>
-    <file>originals/cancel</file>
-    <file>originals/disconnected</file>
-    <file>originals/connected</file>
-    <file>originals/lightning</file>
-  </qresource>
+    <qresource prefix="pixmaps">
+        <file alias="ManuelLabLogo">originals/ManuelLab.png</file>
+        <file alias="PulseSchemaBipolarBurst">originals/PulseSchemaBipolarBurst.png</file>
+        <file alias="PulseSchemaBipolarNoBurst">originals/PulseSchemaBipolarNoBurst.png</file>
+        <file alias="PulseSchemaMonopolarBurst">originals/PulseSchemaMonopolarBurst.png</file>
+        <file alias="PulseSchemaMonopolarNoBurst">originals/PulseSchemaMonopolarNoBurst.png</file>
+    </qresource>
+    <qresource prefix="icons">
+        <file alias="open">originals/icons8-open-40.png</file>
+        <file alias="save">originals/icons8-save-as-40.png</file>
+        <file alias="waveform">originals/waveform.png</file>
+        <file alias="pulse_train">originals/pulse_train.png</file>
+        <file alias="about">originals/about</file>
+        <file alias="exit">originals/exit</file>
+        <file alias="cancel">originals/cancel</file>
+        <file alias="disconnected">originals/disconnected</file>
+        <file alias="connected">originals/connected</file>
+        <file alias="lightning">originals/lightning</file>
+    </qresource>
 </RCC>
