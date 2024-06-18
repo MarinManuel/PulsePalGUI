@@ -412,8 +412,9 @@ class PulsePalOutputChannel(object):
 
     def disable_trigger_source(self, value: PulsePalTriggerChannel = None):
         """
-        removes a trigger source from the list of triggers for that channels
-        :param value: either PulsePalTriggerChannel.TRIGGER1, either PulsePalTriggerChannel.TRIGGER2, or None (in which case all triggers are removed)
+        removes a trigger source from the list of triggers for that channels :param value: either
+        PulsePalTriggerChannel.TRIGGER1, either PulsePalTriggerChannel.TRIGGER2, or None (in which case all triggers
+        are removed)
         """
         logger.debug(
             f"PulsePalOutputChannel[{self.channel_id}].disable_trigger_source({value})"
@@ -434,7 +435,8 @@ class PulsePalOutputChannel(object):
             PulsePalTriggerChannel.TRIGGER1 in self.__trigger_source,
         )
         logger.debug(
-            f"PulsePal.programOutputChannelParam('linkTriggerChannel1',{self.channel_id},{PulsePalTriggerChannel.TRIGGER1 in self.__trigger_source})"
+            f"PulsePal.programOutputChannelParam('linkTriggerChannel1',"
+            f"{self.channel_id},{PulsePalTriggerChannel.TRIGGER1 in self.__trigger_source})"
         )
         self.pulsepal.programOutputChannelParam(
             "linkTriggerChannel2",
@@ -442,7 +444,8 @@ class PulsePalOutputChannel(object):
             PulsePalTriggerChannel.TRIGGER2 in self.__trigger_source,
         )
         logger.debug(
-            f"PulsePal.programOutputChannelParam('linkTriggerChannel2',{self.channel_id},{PulsePalTriggerChannel.TRIGGER2 in self.__trigger_source})"
+            f"PulsePal.programOutputChannelParam('linkTriggerChannel2',"
+            f"{self.channel_id},{PulsePalTriggerChannel.TRIGGER2 in self.__trigger_source})"
         )
 
     @property
@@ -651,9 +654,9 @@ class PulsePalChannelWidget(QWidget):
         self.interBurstIntervalSpinBox.valueChanged.connect(
             self._update_interburst_interval
         )
-        self.fixedVoltGroupBox.toggled.connect(self._toggle_fixedVolt)
-        self.fixedVoltSpinBox.valueChanged.connect(self._update_fixedVolt)
-        self.fixedVoltPctSpinBox.valueChanged.connect(self._update_fixedVoltPct)
+        self.fixedVoltGroupBox.toggled.connect(self._toggle_fixed_volt)
+        self.fixedVoltSpinBox.valueChanged.connect(self._update_fixed_volt)
+        self.fixedVoltPctSpinBox.valueChanged.connect(self._update_fixed_volt_pct)
         # END SLOTS
 
         self.update_all_content()
@@ -771,13 +774,13 @@ class PulsePalChannelWidget(QWidget):
     def _update_interburst_interval(self, value):
         self._channel.interburst_interval = value
 
-    def _toggle_fixedVolt(self, checked):
+    def _toggle_fixed_volt(self, checked):
         if checked:
             self._channel.fixed_voltage = self.fixedVoltSpinBox.value()
         else:
             self._channel.fixed_voltage = 0.0
 
-    def _update_fixedVolt(self, value):
+    def _update_fixed_volt(self, value):
         self._channel.fixed_voltage = value
         pct = np.interp(
             value,
@@ -788,7 +791,7 @@ class PulsePalChannelWidget(QWidget):
         self.fixedVoltPctSpinBox.setValue(pct)
         # self.fixedVoltPctSpinBox.blockSignals(old_state)
 
-    def _update_fixedVoltPct(self, value):
+    def _update_fixed_volt_pct(self, value):
         val = np.interp(
             value,
             [self.fixedVoltPctSpinBox.minimum(), self.fixedVoltPctSpinBox.maximum()],
@@ -798,11 +801,13 @@ class PulsePalChannelWidget(QWidget):
 
     def to_json(self):
         config = self._channel.to_json()
-        config |= {
-            "OutputMode": self.outputModeButtonGroup.checkedId(),
-            "BurstModeEnabled": self.burstModeGroupBox.isChecked(),
-            "FixedOutputVoltageEnabled": self.fixedVoltGroupBox.isChecked(),
-        }
+        config.update(
+            {
+                "OutputMode": self.outputModeButtonGroup.checkedId(),
+                "BurstModeEnabled": self.burstModeGroupBox.isChecked(),
+                "FixedOutputVoltageEnabled": self.fixedVoltGroupBox.isChecked(),
+            }
+        )
         return config
 
     def apply_config(self, config):
