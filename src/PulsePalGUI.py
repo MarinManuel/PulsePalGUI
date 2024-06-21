@@ -1,13 +1,11 @@
-import json
 import logging
 from enum import IntEnum
-from typing import List
 
 import numpy as np
 import serial.tools.list_ports
-
 # noinspection PyUnresolvedReferences
 from PyQt5 import uic
+from PyQt5.QtCore import QTimer, QAbstractListModel, Qt
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import (
     QWidget,
@@ -23,12 +21,14 @@ from PyQt5.QtWidgets import (
     QToolButton,
     QLayout,
     QAction,
-    QInputDialog,
     QDoubleSpinBox,
+    QListWidget,
+    QDialogButtonBox,
     QDialog,
-    QFileDialog,
+    QVBoxLayout,
+    QMessageBox, QListView,
 )
-from serial.tools.list_ports_common import ListPortInfo
+from serial.tools import list_ports
 
 # noinspection PyUnresolvedReferences
 import resources.resources as resources
@@ -57,16 +57,61 @@ def discover_ports(pattern=PULSE_PAL_SERIAL_HWINFO):
     return ports
 
 
-def choose_port_dialog(possible_ports: List[ListPortInfo]):
-    ret_val = None
-    items = [f"{p.name} ({p.description})" for p in possible_ports]
-    item, ok = QInputDialog().getItem(
-        None, "Choose the correct serial port", "Serial ports:", items, 0, False
-    )
-    if ok:
-        item_id = items.index(item)
-        ret_val = possible_ports[item_id].device
-    return ret_val
+class PortListModel(QAbstractListModel):
+    def __init__(self, ports=None, parent=None):
+        super().__init__(parent=parent)
+        self.ports = ports or []
+
+    def data(self, index, role):
+        if role == Qt.DisplayRole:
+            port_info = self.ports[index.row()]
+            return f'{port_info.device} - {port_info.description}'
+
+    def rowCount(self, index):
+        return len(self.ports)
+
+    def get_port(self, index):
+        if 0 <= index.row() < len(self.ports):
+            return self.ports[index.row()]
+        return None
+
+
+class SerialPortSelectorDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.selected_port = None
+        self.label = QLabel("Select a serial port")
+        self.serial_list_view = QListView(self)
+        self.model = PortListModel(list_ports.comports())
+        self.serial_list_view.setModel(self.model)
+        self.serial_list_view.setSelectionMode(QListWidget.SingleSelection)
+        self.buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        self.layout = QVBoxLayout(self)
+        self.layout.addWidget(self.label)
+        self.layout.addWidget(self.serial_list_view)
+        self.layout.addWidget(self.buttons)
+        self.setLayout(self.layout)
+        self.buttons.accepted.connect(self.ok_clicked)
+        self.buttons.rejected.connect(self.reject)
+        self.update_timer = QTimer(self)
+        self.update_timer.timeout.connect(self.on_update_timer)
+        self.update_timer.startTimer(500)  # 500ms
+
+    def ok_clicked(self):
+        selected_indexes = self.serial_list_view.selectedIndexes()
+        if not selected_indexes:
+            QMessageBox.warning(
+                self, "No Selection", "Please select an item before clicking OK."
+            )
+        else:
+            selected_index = selected_indexes[0]
+            self.selected_port = self.model.get_port(selected_index)
+            QMessageBox.information(self, 'Selection', f'You selected: {self.selected_port}')
+            self.accept()
+
+    def on_update_timer(self, *args):
+        serials = list_ports.comports()
+        self.model.ports = serials
 
 
 class PulsePalTriggerMode(IntEnum):
@@ -141,9 +186,6 @@ class PulsePalOutputChannel(object):
         self.is_burst = False
         self.disable_trigger_source()
         self.fixed_voltage = 0.0
-        self.custom_train_id = PulsePalCustomTrainID.NONE
-        self.custom_train_target = PulsePalCustomTrainTarget.PULSES
-        self.custom_train_loop = PulsePalCustomTrainLoop.ONE_SHOT
 
     @property
     def is_biphasic(self) -> bool:
@@ -412,9 +454,9 @@ class PulsePalOutputChannel(object):
 
     def disable_trigger_source(self, value: PulsePalTriggerChannel = None):
         """
-        removes a trigger source from the list of triggers for that channels :param value: either
-        PulsePalTriggerChannel.TRIGGER1, either PulsePalTriggerChannel.TRIGGER2, or None (in which case all triggers
-        are removed)
+        removes a trigger source from the list of triggers for that channels
+        :param value: either PulsePalTriggerChannel.TRIGGER1, either PulsePalTriggerChannel.TRIGGER2, or None
+        (in which case all triggers are removed)
         """
         logger.debug(
             f"PulsePalOutputChannel[{self.channel_id}].disable_trigger_source({value})"
@@ -435,8 +477,8 @@ class PulsePalOutputChannel(object):
             PulsePalTriggerChannel.TRIGGER1 in self.__trigger_source,
         )
         logger.debug(
-            f"PulsePal.programOutputChannelParam('linkTriggerChannel1',"
-            f"{self.channel_id},{PulsePalTriggerChannel.TRIGGER1 in self.__trigger_source})"
+            f"PulsePal.programOutputChannelParam('linkTriggerChannel1',{self.channel_id},"
+            f"{PulsePalTriggerChannel.TRIGGER1 in self.__trigger_source})"
         )
         self.pulsepal.programOutputChannelParam(
             "linkTriggerChannel2",
@@ -444,8 +486,8 @@ class PulsePalOutputChannel(object):
             PulsePalTriggerChannel.TRIGGER2 in self.__trigger_source,
         )
         logger.debug(
-            f"PulsePal.programOutputChannelParam('linkTriggerChannel2',"
-            f"{self.channel_id},{PulsePalTriggerChannel.TRIGGER2 in self.__trigger_source})"
+            f"PulsePal.programOutputChannelParam('linkTriggerChannel2',{self.channel_id},"
+            f"{PulsePalTriggerChannel.TRIGGER2 in self.__trigger_source})"
         )
 
     @property
@@ -505,28 +547,6 @@ class PulsePalOutputChannel(object):
         logger.debug(
             f"PulsePal.setFixedVoltage({self.channel_id}, {self.__fixed_voltage})"
         )
-
-    def to_json(self):
-        config = {
-            "biphasic": self.is_biphasic,
-            "baseline_voltage": self.baseline_voltage,
-            "phase1_voltage": self.phase1_voltage,
-            "phase1_duration": self.phase1_duration,
-            "phase2_voltage": self.phase2_voltage,
-            "phase2_duration": self.phase2_duration,
-            "interphase_interval": self.interphase_interval,
-            "interpulse_interval": self.interpulse_interval,
-            "interburst_interval": self.interburst_interval,
-            "burst_duration": self.burst_duration,
-            "train_delay": self.train_delay,
-            "train_duration": self.train_duration,
-            "trigger_source": list(self.trigger_source),
-            "custom_train_id": self.custom_train_id,
-            "custom_train_target": self.custom_train_target,
-            "custom_train_loop": self.custom_train_loop,
-            "fixed_voltage": self.fixed_voltage,
-        }
-        return config
 
 
 # noinspection PyPep8Naming
@@ -619,8 +639,8 @@ class PulsePalChannelWidget(QWidget):
     fixedVoltSpinBox: ScienDSpinBox
     fixedVoltPctSpinBox: QDoubleSpinBox
 
-    def __init__(self, channel: PulsePalOutputChannel):
-        super().__init__()
+    def __init__(self, channel: PulsePalOutputChannel, parent=None):
+        super().__init__(parent=parent)
         # noinspection SpellCheckingInspection
         uic.loadUi("src/channelwidget.ui", self)
         self._channel = channel
@@ -697,19 +717,21 @@ class PulsePalChannelWidget(QWidget):
         if not self._channel.is_biphasic:
             if not self._channel.is_burst:
                 self.schemaLabel.setPixmap(
-                    QPixmap(":/pixmaps/PulseSchemaMonopolarNoBurst")
+                    QPixmap(":/pixmaps/PulseSchemaMonopolarNoBurst.png")
                 )
             else:
                 self.schemaLabel.setPixmap(
-                    QPixmap(":/pixmaps/PulseSchemaMonopolarBurst")
+                    QPixmap(":/pixmaps/PulseSchemaMonopolarBurst.png")
                 )
         else:
             if not self._channel.is_burst:
                 self.schemaLabel.setPixmap(
-                    QPixmap(":/pixmaps/PulseSchemaBipolarNoBurst")
+                    QPixmap(":/pixmaps/PulseSchemaBipolarNoBurst.png")
                 )
             else:
-                self.schemaLabel.setPixmap(QPixmap(":/pixmaps/PulseSchemaBipolarBurst"))
+                self.schemaLabel.setPixmap(
+                    QPixmap(":/pixmaps/PulseSchemaBipolarBurst.png")
+                )
 
     # noinspection PyUnusedLocal
     def _toggle_output_mode(self, btn, checked):
@@ -799,49 +821,6 @@ class PulsePalChannelWidget(QWidget):
         )
         self.fixedVoltSpinBox.setValue(val)
 
-    def to_json(self):
-        config = self._channel.to_json()
-        config.update(
-            {
-                "OutputMode": self.outputModeButtonGroup.checkedId(),
-                "BurstModeEnabled": self.burstModeGroupBox.isChecked(),
-                "FixedOutputVoltageEnabled": self.fixedVoltGroupBox.isChecked(),
-            }
-        )
-        return config
-
-    def apply_config(self, config):
-        try:
-            self.baselineVoltageSpinBox.setValue(config["baseline_voltage"])
-            self.phase1VoltageSpinBox.setValue(config["phase1_voltage"])
-            self.phase1DurationSpinBox.setValue(config["phase1_duration"])
-            self.phase2VoltageSpinBox.setValue(config["phase2_voltage"])
-            self.phase2DurationSpinBox.setValue(config["phase2_duration"])
-            self.interPhaseIntervalSpinBox.setValue(config["interphase_interval"])
-            self.pulseIntervalSpinBox.setValue(config["interpulse_interval"])
-            self.interBurstIntervalSpinBox.setValue(config["interburst_interval"])
-            self.burstDurationSpinBox.setValue(config["burst_duration"])
-            self.trainDelaySpinBox.setValue(config["train_delay"])
-            self.trainDurationSpinBox.setValue(config["train_duration"])
-            # config["trigger_source": [],
-            self.trigger1CheckBox.setChecked(1 in config["trigger_source"])
-            self.trigger2CheckBox.setChecked(2 in config["trigger_source"])
-            # config["custom_train_id": 0,
-            # config["custom_train_target": 0,
-            # config["custom_train_loop": 0,
-            self.fixedVoltSpinBox.setValue(config["fixed_voltage"])
-            self.outputModeButtonGroup.button(config["OutputMode"]).click()
-            self.burstModeGroupBox.setChecked(config["BurstModeEnabled"])
-            self.fixedVoltGroupBox.setChecked(config["FixedOutputVoltageEnabled"])
-        except KeyError:
-            pass
-
-
-class AboutDialog(QDialog):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        uic.loadUi("src/AboutDlg.ui", self)
-
 
 class MainWindow(QMainWindow):
     channelsTabWidget: QTabWidget
@@ -863,11 +842,9 @@ class MainWindow(QMainWindow):
     action_Quit: QAction
     action_About: QAction
     action_Abort: QAction
-    action_Save: QAction
-    action_Open: QAction
 
     def __init__(self, pulsepal: PulsePalObject):
-        super().__init__()
+        super().__init__(parent=None)
         # noinspection SpellCheckingInspection
         uic.loadUi("src/mainwindow.ui", self)
 
@@ -884,8 +861,6 @@ class MainWindow(QMainWindow):
         self.action_Quit.triggered.connect(self.__action_quit)
         self.action_About.triggered.connect(self.__action_about)
         self.action_Abort.triggered.connect(self.__action_abort)
-        self.action_Open.triggered.connect(self.__action_open)
-        self.action_Save.triggered.connect(self.__action_save)
         self.trigger1ModeComboBox.currentIndexChanged.connect(
             self.__trigger1_mode_changed
         )
@@ -899,34 +874,14 @@ class MainWindow(QMainWindow):
         self.close()
 
     def __action_connect(self, checked):
-        pass
+        dlg = SerialPortSelectorDialog(parent=self)
+        if dlg.exec_() == QDialog.Accepted and dlg.selected_port:
+            pulsepal = PulsePalObject(dlg.selected_port.device)
+            self.pulsepal = pulsepal
+            self.pulsepal.syncAllParams()
 
-    # noinspection PyUnusedLocal
     def __action_about(self, checked):
-        dlg = AboutDialog(self)
-        dlg.show()
-
-    # noinspection PyUnusedLocal
-    def __action_save(self, checked):
-        filename, _ = QFileDialog.getSaveFileName(
-            self, "Save File", "PulsePal_config.json", "JSON files (*.json)"
-        )
-        if filename:
-            with open(filename, "w") as f:
-                json.dump(self.to_json(), f, indent=4)
-
-    # noinspection PyUnusedLocal
-    def __action_open(self, checked):
-        filename, _ = QFileDialog.getOpenFileName(
-            self,
-            "Open Configuration File",
-            "PulsePal_config.json",
-            "JSON files (*.json)",
-        )
-        if filename:
-            with open(filename, "r") as f:
-                config = json.load(f)
-                self.apply_config(config)
+        pass
 
     # noinspection PyUnusedLocal
     def __action_abort(self, checked):
@@ -955,43 +910,3 @@ class MainWindow(QMainWindow):
             f">>Manual trigger channels {[i + 1 for i, a in enumerate(channels) if a == 1]}"
         )
         self.pulsepal.triggerOutputChannels(*channels)
-
-    def to_json(self):
-        config = {
-            "general": {
-                "Trigger1Mode": self.trigger1ModeComboBox.currentIndex(),
-                "Trigger2Mode": self.trigger2ModeComboBox.currentIndex(),
-                "ManualTriggers": [
-                    self.channel1TriggerCheckBox.isChecked(),
-                    self.channel2TriggerCheckBox.isChecked(),
-                    self.channel3TriggerCheckBox.isChecked(),
-                    self.channel4TriggerCheckBox.isChecked(),
-                ],
-            },
-            "channels": [
-                self.channelsTabWidget.widget(i).to_json()
-                for i in range(N_OUTPUT_CHANNELS)
-            ],
-        }
-        return config
-
-    def apply_config(self, config):
-        try:
-            general_config = config["general"]
-            self.trigger1ModeComboBox.setCurrentIndex(general_config["Trigger1Mode"])
-            self.trigger2ModeComboBox.setCurrentIndex(general_config["Trigger2Mode"])
-            for trigCheckBox, triggerEnabled in zip(
-                [
-                    self.channel1TriggerCheckBox,
-                    self.channel2TriggerCheckBox,
-                    self.channel3TriggerCheckBox,
-                    self.channel4TriggerCheckBox,
-                ],
-                general_config["ManualTriggers"],
-            ):
-                trigCheckBox.setChecked(triggerEnabled)
-            for i, channel_config in enumerate(config["channels"]):
-                channel_widget = self.channelsTabWidget.widget(i)
-                channel_widget.apply_config(channel_config)
-        except KeyError:
-            pass
