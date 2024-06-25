@@ -2,7 +2,8 @@
 
 A standalone GUI for controlling a [Pulse Pal](https://github.com/sanworks/PulsePal) pulse generator written in python.
 
-![Screenshot 2024-01-11 134603](https://github.com/MarinManuel/PulsePalGUI/assets/65401298/ce8d5ebe-6dca-46a8-9c6b-ad9d7a3d5a5e)
+![Screenshot from 2024-06-24 22-47-14](https://github.com/MarinManuel/PulsePalGUI/assets/65401298/2a020153-af61-47f4-a021-c6f1ab610362)
+
 
 # Usage
 
