@@ -2,7 +2,6 @@ import logging
 from enum import IntEnum
 
 import numpy as np
-import serial.tools.list_ports
 # noinspection PyUnresolvedReferences
 from PyQt5 import uic
 from PyQt5.QtCore import QTimer, QAbstractListModel, Qt
@@ -28,6 +27,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QMessageBox, QListView,
 )
+from serial.serialutil import SerialException
 from serial.tools import list_ports
 
 # noinspection PyUnresolvedReferences
@@ -50,24 +50,17 @@ def constrain_value(value, min_value, max_value):
         return value
 
 
-def discover_ports(pattern=PULSE_PAL_SERIAL_HWINFO):
-    logger.debug(f"Discovering ports containing pattern '{pattern}'")
-    ports = list(serial.tools.list_ports.grep(pattern))
-    logger.debug(f"Found: {ports}")
-    return ports
-
-
 class PortListModel(QAbstractListModel):
     def __init__(self, ports=None, parent=None):
         super().__init__(parent=parent)
         self.ports = ports or []
 
-    def data(self, index, role):
+    def data(self, index, role=None):
         if role == Qt.DisplayRole:
             port_info = self.ports[index.row()]
             return f'{port_info.device} - {port_info.description}'
 
-    def rowCount(self, index):
+    def rowCount(self, parent=None, *args, **kwargs):
         return len(self.ports)
 
     def get_port(self, index):
@@ -106,9 +99,9 @@ class SerialPortSelectorDialog(QDialog):
         else:
             selected_index = selected_indexes[0]
             self.selected_port = self.model.get_port(selected_index)
-            QMessageBox.information(self, 'Selection', f'You selected: {self.selected_port}')
             self.accept()
 
+    # noinspection PyUnusedLocal
     def on_update_timer(self, *args):
         serials = list_ports.comports()
         self.model.ports = serials
@@ -717,20 +710,20 @@ class PulsePalChannelWidget(QWidget):
         if not self._channel.is_biphasic:
             if not self._channel.is_burst:
                 self.schemaLabel.setPixmap(
-                    QPixmap(":/pixmaps/PulseSchemaMonopolarNoBurst.png")
+                    QPixmap(":/pixmaps/PulseSchemaMonopolarNoBurst")
                 )
             else:
                 self.schemaLabel.setPixmap(
-                    QPixmap(":/pixmaps/PulseSchemaMonopolarBurst.png")
+                    QPixmap(":/pixmaps/PulseSchemaMonopolarBurst")
                 )
         else:
             if not self._channel.is_burst:
                 self.schemaLabel.setPixmap(
-                    QPixmap(":/pixmaps/PulseSchemaBipolarNoBurst.png")
+                    QPixmap(":/pixmaps/PulseSchemaBipolarNoBurst")
                 )
             else:
                 self.schemaLabel.setPixmap(
-                    QPixmap(":/pixmaps/PulseSchemaBipolarBurst.png")
+                    QPixmap(":/pixmaps/PulseSchemaBipolarBurst")
                 )
 
     # noinspection PyUnusedLocal
@@ -874,11 +867,22 @@ class MainWindow(QMainWindow):
         self.close()
 
     def __action_connect(self, checked):
-        dlg = SerialPortSelectorDialog(parent=self)
-        if dlg.exec_() == QDialog.Accepted and dlg.selected_port:
-            pulsepal = PulsePalObject(dlg.selected_port.device)
-            self.pulsepal = pulsepal
-            self.pulsepal.syncAllParams()
+        if checked:
+            dlg = SerialPortSelectorDialog(parent=self)
+            if dlg.exec_() == QDialog.Accepted and dlg.selected_port:
+                try:
+                    pulsepal = PulsePalObject(dlg.selected_port.device)
+                    self.pulsepal = pulsepal
+                    self.pulsepal.syncAllParams()
+                except SerialException as e:
+                    QMessageBox.critical(self, "Error", str(e))
+                    self.pulsepal = DummyPulsePalObject('Dummy')
+                    self.action_Connect.setChecked(False)
+            else:
+                self.action_Connect.setChecked(False)
+        else:
+            self.pulsepal.Port.serialObject.close()
+            self.pulsepal = DummyPulsePalObject('Dummy')
 
     def __action_about(self, checked):
         pass

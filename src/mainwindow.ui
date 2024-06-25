@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>718</width>
-    <height>707</height>
+    <width>734</width>
+    <height>724</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -286,8 +286,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>718</width>
-     <height>22</height>
+     <width>734</width>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -321,15 +321,20 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="action_Connect"/>
    <addaction name="action_Open"/>
    <addaction name="action_Save"/>
-   <addaction name="action_Connect"/>
    <addaction name="action_Abort"/>
   </widget>
   <action name="action_Connect">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
    <property name="icon">
     <iconset resource="../resources/resources.qrc">
-     <normaloff>:/icons/connected</normaloff>:/icons/connected</iconset>
+     <normaloff>:/icons/disconnected</normaloff>
+     <normalon>:/icons/connected</normalon>
+     <disabledon>:/icons/connected</disabledon>:/icons/disconnected</iconset>
    </property>
    <property name="text">
     <string>Connect...</string>
