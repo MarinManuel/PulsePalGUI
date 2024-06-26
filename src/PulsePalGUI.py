@@ -88,7 +88,7 @@ class SerialPortSelectorDialog(QDialog):
         self.buttons.rejected.connect(self.reject)
         self.update_timer = QTimer(self)
         self.update_timer.timeout.connect(self.on_update_timer)
-        self.update_timer.startTimer(500)  # 500ms
+        self.update_timer.start(500)  # 500ms
 
     def ok_clicked(self):
         selected_indexes = self.serial_list_view.selectedIndexes()
@@ -103,8 +103,12 @@ class SerialPortSelectorDialog(QDialog):
 
     # noinspection PyUnusedLocal
     def on_update_timer(self, *args):
-        serials = list_ports.comports()
-        self.model.ports = serials
+        new_serials = list_ports.comports()
+        if not new_serials == self.model.ports:
+            logger.debug(f"New serial ports detected: [{new_serials}]")
+            self.model.beginResetModel()
+            self.model.ports = new_serials
+            self.model.endResetModel()
 
 
 class PulsePalTriggerMode(IntEnum):
