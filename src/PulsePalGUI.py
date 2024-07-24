@@ -32,6 +32,7 @@ from serial.tools import list_ports
 
 # noinspection PyUnresolvedReferences
 import resources.resources as resources
+from src.ArCOM import ArCOMError
 from src.PulsePal import PulsePalObject
 from src.scientific_spinbox import ScienDSpinBox
 
@@ -86,9 +87,10 @@ class SerialPortSelectorDialog(QDialog):
         self.setLayout(self.layout)
         self.buttons.accepted.connect(self.ok_clicked)
         self.buttons.rejected.connect(self.reject)
+        self.serial_list_view.doubleClicked.connect(self.ok_clicked)
         self.update_timer = QTimer(self)
         self.update_timer.timeout.connect(self.on_update_timer)
-        self.update_timer.start(500)  # 500ms
+        self.update_timer.start(1000)  # 1s
 
     def ok_clicked(self):
         selected_indexes = self.serial_list_view.selectedIndexes()
@@ -866,6 +868,9 @@ class MainWindow(QMainWindow):
         )
         self.softTriggerPushButton.clicked.connect(self.__do_soft_trigger)
 
+        if hasattr(pulsepal, 'Port') and pulsepal.Port.serialObject.is_open:
+            self.action_Connect.setChecked(True)
+
     # noinspection PyUnusedLocal
     def __action_quit(self, checked):
         self.close()
@@ -878,8 +883,11 @@ class MainWindow(QMainWindow):
                     pulsepal = PulsePalObject(dlg.selected_port.device)
                     self.pulsepal = pulsepal
                     self.pulsepal.syncAllParams()
-                except SerialException as e:
-                    QMessageBox.critical(self, "Error", str(e))
+                except (SerialException, ArCOMError) as e:
+                    # noinspection PyTypeChecker
+                    QMessageBox.warning(self, "Critical error",
+                                        f"Could not communicate with Pulse Pal on "
+                                        f"{dlg.selected_port.device}:\n{e}")
                     self.pulsepal = DummyPulsePalObject('Dummy')
                     self.action_Connect.setChecked(False)
             else:

@@ -1,9 +1,11 @@
 import argparse
 import logging
+import sys
 
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QMessageBox
 
-from src.PulsePal import PulsePalObject, PulsePalError
+from src.ArCOM import ArCOMError
+from src.PulsePal import PulsePalObject
 from src.PulsePalGUI import (
     MainWindow,
     DummyPulsePalObject,
@@ -21,7 +23,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog="PulsePalGUI",
         description="This software provides a graphical user interface for controlling a Pulse Pal, an open source "
-        "pulse train generator for physiology and behavior",
+                    "pulse train generator for physiology and behavior",
     )
     parser.add_argument(
         "-p",
@@ -34,7 +36,7 @@ if __name__ == "__main__":
         action="count",
         default=0,
         help="increase verbosity of output (can be "
-        "repeated to increase verbosity further)",
+             "repeated to increase verbosity further)",
     )
     args = parser.parse_args()
 
@@ -43,14 +45,21 @@ if __name__ == "__main__":
     ]  # cap to last level index
     logger.setLevel(level=level)
 
+    app = QApplication([])
+
     if args.port is None:
         logger.info("Starting PulsePalGUI with no serial port.")
         pulsepal = DummyPulsePalObject(None)
     else:
         logger.info("Starting PulsePalGUI with serial port '{}'".format(args.port))
-        pulsepal = PulsePalObject(args.port)
+        try:
+            pulsepal = PulsePalObject(args.port)
+        except ArCOMError as e:
+            # noinspection PyTypeChecker
+            QMessageBox.critical(None, "Critical error",
+                                 f"Could not communicate with Pulse Pal on {args.port}:\n{e}")
+            sys.exit(1)
 
-    app = QApplication([])
     mw = MainWindow(pulsepal)
     mw.show()
     # Start the event loop.
