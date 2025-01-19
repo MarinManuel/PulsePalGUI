@@ -19,6 +19,7 @@ python PulsePalGUI.py --port <SERIAL PORT>
 The custom pulses are not implemented yet
 
 ## Acknowledgments
+This work was supported in part by NIH-NINDS R01NS132487.
 
 `scientific_spinbox.py` is from [pyqt-labutils](https://github.com/OE-FET/pyqt-labutils/tree/master)
 
